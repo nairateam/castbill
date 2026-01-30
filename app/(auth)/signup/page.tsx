@@ -36,6 +36,7 @@ const SignupPage = () => {
             return;
         }
 
+        toast.success("Welcome on board!");
         router.push("/dashboard");
     };
 
