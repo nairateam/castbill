@@ -8,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { supabase } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 const loginSchema = z.object({
     email: z.email("Invalid email address"),
@@ -31,17 +32,27 @@ export default function LoginPage() {
     const onSubmit = async (formData: LoginInput) => {
         const { email, password } = formData;
 
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data: authData, error } = await supabase.auth.signInWithPassword({
             email,
             password,
         });
 
         if (error) {
-            alert(error.message);
+            toast.error(error.message);
             return;
         }
 
-        router.push("/dashboard");
+        if (authData.session) {
+            toast.success("Auth dey here ooo!")
+        } else {
+            toast.error("E no dey here ooo!")
+        }
+
+        toast.success("Welcome back!");
+
+        // A sligth delay
+        await new Promise((res) => setTimeout(res, 100));
+        router.replace("/dashboard");
     };
 
     return (

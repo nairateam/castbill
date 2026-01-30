@@ -8,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { supabase } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 const SignupPage = () => {
     const router = useRouter();
@@ -29,9 +30,9 @@ const SignupPage = () => {
     const onSubmit = async (data: SignupInput) => {
         const { email, password } = data;
         const { data: authData, error } = await supabase.auth.signUp({ email, password });
-        if (error) return alert(error.message);
+        if (error) return toast.error(error.message);
         if (!authData.session) {
-            alert("Check your email to confirm your account");
+            toast.success("Check your email to confirm your account");
             return;
         }
 
