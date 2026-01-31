@@ -9,6 +9,7 @@ import { useForm } from "react-hook-form";
 import { supabase } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import Link from "next/link";
 
 const SignupPage = () => {
     const router = useRouter();
@@ -18,7 +19,10 @@ const SignupPage = () => {
         password: z
             .string()
             .min(8, "Password must be at least 8 characters")
-            .regex(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/, "Password must include letters and numbers"),
+            .regex(
+                /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z\d])[A-Za-z\d^_!@#$%^&*+=\-[\]\\{}|;':",./<>?]{8,}$/,
+                "Password must include letters, numbers, and symbols"
+            )
     });
 
     type SignupInput = z.infer<typeof signupSchema>;
@@ -85,7 +89,7 @@ const SignupPage = () => {
                     </svg> Signup with Google</Button>
 
                     <p className="text-sm text-gray-500 text-center">
-                        Already have an account? <span className="text-blue-600 underline cursor-pointer">Log in instead</span>
+                        Already have an account? <Link href="/login" className="text-blue-600 underline cursor-pointer">Log in instead</Link>
                     </p>
                 </div>
             </div>

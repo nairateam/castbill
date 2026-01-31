@@ -62,10 +62,10 @@ export default function LoginPage() {
                 <Logo />
                 <form onSubmit={handleSubmit(onSubmit)} className="lg:w-120 space-y-4 rounded-lg shadow-xl p-10 bg-white">
                     <div className="space-y-4 pb-5">
-                        <h1 className="text-3xl text-center font-semibold text-black">
+                        <h1 className="text-xl md:text-3xl text-center font-semibold text-black">
                             Welcome back
                         </h1>
-                        <p className="mt-4 text-center text-gray-600">
+                        <p className="-mt-2 md:mt-4 text-base text-center text-gray-600 px-6 md:px-0">
                             Log in to manage your invoices and track payments.
                         </p>
                     </div>
@@ -102,9 +102,7 @@ export default function LoginPage() {
                         Sign In
                     </Button>
 
-                    <hr className="my-5" />
-
-                    <p className="text-sm text-gray-500 text-center pt-3">
+                    <p className="text-sm text-gray-500 border-t border-t-gray-200 text-center pt-6 mt-6">
                         Don’t have an account?{" "}
                         <span
                             className="text-blue-600 underline cursor-pointer"

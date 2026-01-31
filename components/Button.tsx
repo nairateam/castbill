@@ -61,7 +61,7 @@ const Button: FC<ButtonProps> = ({
                     ></path>
                 </svg>
             )}
-            <span className={isLoading ? "opacity-70" : "inline-flex gap-3 items-center"}>{children}</span>
+            <span className={isLoading ? "opacity-70" : "inline-flex gap-2 items-center"}>{children}</span>
         </button>
     );
 };

@@ -3,6 +3,10 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import LeftSidebar from "@/components/Sidebar";
+import { InvoiceDrawerProvider } from "@/components/invoice/DrawerProvider";
+import { InvoiceDrawer } from "@/components/invoice/Drawer";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     const router = useRouter();
@@ -24,5 +28,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
     if (loading) return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
 
-    return <div>{children}</div>; // dashboard pages
+    return (
+        <div>
+            <SidebarProvider>
+                <InvoiceDrawerProvider>
+                    <LeftSidebar />
+                    <main className="max-w-7xl mx-auto w-full p-6">
+                        {children}
+                    </main>
+                    <InvoiceDrawer />
+                </InvoiceDrawerProvider>
+            </SidebarProvider>
+        </div>
+    );
+
+
 }
