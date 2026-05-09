@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { useTheme } from "@/components/ThemeProvider";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { Search, Bell, ChevronDown, Settings, LogOut, User, Moon, Sun, Command, X, Menu } from "lucide-react";
 
 interface TopNavProps {
@@ -49,7 +49,6 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
     const searchRef = useRef<HTMLInputElement>(null);
 
     const pageLabel = BREADCRUMB_MAP[pathname] ?? "Dashboard";
-
     const userName = session?.user?.name ?? session?.user?.email ?? "User";
     const userEmail = session?.user?.email ?? "";
     const initials = getInitials(session?.user?.name, session?.user?.email);
@@ -76,82 +75,92 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
         return () => document.removeEventListener("keydown", handler);
     }, []);
 
+    if (searchOpen) {
+        return (
+            <header
+                style={{ background: "var(--topnav-bg)", borderBottom: "1px solid var(--topnav-border)" }}
+                className="relative z-10 flex h-16 shrink-0 items-center px-4 sm:px-6 gap-3"
+            >
+                <div
+                    style={{ background: "var(--bg-subtle)", borderColor: "var(--accent)" }}
+                    className="flex flex-1 items-center gap-2 rounded-lg border px-3 py-1.5 shadow-sm"
+                >
+                    <Search className="h-4 w-4 shrink-0" style={{ color: "var(--text-muted)" }} />
+                    <input
+                        ref={searchRef}
+                        type="text"
+                        value={searchValue}
+                        onChange={(e) => setSearchValue(e.target.value)}
+                        placeholder="Search anything..."
+                        style={{ background: "transparent", color: "var(--text-primary)" }}
+                        className="flex-1 text-sm outline-none placeholder:text-[var(--text-faint)]"
+                    />
+                </div>
+                <button
+                    onClick={() => { setSearchOpen(false); setSearchValue(""); }}
+                    style={{ color: "var(--text-muted)" }}
+                    className="shrink-0 text-sm hover:opacity-70 transition-opacity"
+                >
+                    Cancel
+                </button>
+            </header>
+        );
+    }
+
     return (
         <header
             style={{ background: "var(--topnav-bg)", borderBottom: "1px solid var(--topnav-border)" }}
             className="relative z-10 flex h-16 shrink-0 items-center justify-between px-4 sm:px-6"
         >
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 min-w-0">
                 <button
                     onClick={onMenuClick}
                     style={{ color: "var(--text-muted)" }}
-                    className="flex lg:hidden h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-[var(--bg-overlay)]"
+                    className="flex lg:hidden h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors hover:bg-[var(--bg-overlay)]"
                     aria-label="Open menu"
                 >
                     <Menu className="h-5 w-5" />
                 </button>
 
-                <div className="flex items-center gap-2 text-sm">
-                    <span style={{ color: "var(--text-muted)" }}>Dashboard</span>
+                <div className="flex items-center gap-2 text-sm min-w-0">
+                    <span className="hidden sm:inline shrink-0" style={{ color: "var(--text-muted)" }}>Dashboard</span>
                     {pageLabel !== "Overview" && (
                         <>
-                            <span style={{ color: "var(--border-strong)" }}>/</span>
-                            <span className="font-semibold" style={{ color: "var(--text-primary)" }}>{pageLabel}</span>
+                            <span className="hidden sm:inline shrink-0" style={{ color: "var(--border-strong)" }}>/</span>
+                            <span className="truncate font-semibold" style={{ color: "var(--text-primary)" }}>{pageLabel}</span>
                         </>
                     )}
                     {pageLabel === "Overview" && (
-                        <span className="font-semibold" style={{ color: "var(--text-primary)" }}>Overview</span>
+                        <span className="truncate font-semibold" style={{ color: "var(--text-primary)" }}>Overview</span>
                     )}
                 </div>
             </div>
 
-            {/* Right controls */}
-            <div className="flex items-center gap-1.5 sm:gap-2">
+            <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+                <button
+                    onClick={() => setSearchOpen(true)}
+                    style={{ color: "var(--text-muted)" }}
+                    className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-[var(--bg-overlay)] sm:hidden"
+                    aria-label="Search"
+                >
+                    <Search className="h-4 w-4" />
+                </button>
 
-                {/* Search */}
-                <div className="relative">
-                    {searchOpen ? (
-                        <div
-                            style={{ background: "var(--bg-subtle)", borderColor: "var(--accent)", color: "var(--text-primary)" }}
-                            className="flex items-center gap-2 rounded-lg border px-3 py-1.5 shadow-sm sm:w-64"
-                        >
-                            <Search className="h-4 w-4 shrink-0" style={{ color: "var(--text-muted)" }} />
-                            <input
-                                ref={searchRef}
-                                type="text"
-                                value={searchValue}
-                                onChange={(e) => setSearchValue(e.target.value)}
-                                placeholder="Search anything..."
-                                style={{ background: "transparent", color: "var(--text-primary)" }}
-                                className="flex-1 text-sm outline-none placeholder:text-[var(--text-faint)]"
-                            />
-                            <button
-                                onClick={() => { setSearchOpen(false); setSearchValue(""); }}
-                                style={{ color: "var(--text-muted)" }}
-                                className="hover:opacity-70 transition-opacity"
-                            >
-                                <X className="h-3.5 w-3.5" />
-                            </button>
-                        </div>
-                    ) : (
-                        <button
-                            onClick={() => setSearchOpen(true)}
-                            style={{ background: "var(--bg-subtle)", border: "1px solid var(--border)", color: "var(--text-muted)" }}
-                            className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm transition-colors hover:border-[var(--border-strong)]"
-                        >
-                            <Search className="h-4 w-4" />
-                            <span className="hidden sm:inline">Search...</span>
-                            <kbd
-                                style={{ border: "1px solid var(--border)", background: "var(--bg-raised)", color: "var(--text-faint)" }}
-                                className="hidden items-center gap-0.5 rounded px-1.5 text-[10px] font-medium sm:flex"
-                            >
-                                <Command className="h-2.5 w-2.5" />K
-                            </kbd>
-                        </button>
-                    )}
-                </div>
+                <button
+                    onClick={() => setSearchOpen(true)}
+                    style={{ background: "var(--bg-subtle)", border: "1px solid var(--border)", color: "var(--text-muted)" }}
+                    className="hidden sm:flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm transition-colors hover:border-[var(--border-strong)]"
+                >
+                    <Search className="h-4 w-4" />
+                    <span>Search...</span>
+                    <kbd
+                        style={{ border: "1px solid var(--border)", background: "var(--bg-raised)", color: "var(--text-faint)" }}
+                        className="flex items-center gap-0.5 rounded px-1.5 text-[10px] font-medium"
+                    >
+                        <Command className="h-2.5 w-2.5" />K
+                    </kbd>
+                </button>
 
-                {/* Theme toggle */}
                 <button
                     onClick={toggle}
                     style={{ color: "var(--text-muted)" }}
@@ -164,7 +173,6 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
                     )}
                 </button>
 
-                {/* Notifications — bell only, no hardcoded data */}
                 <div ref={notifRef} className="relative">
                     <button
                         onClick={() => { setNotifOpen((v) => !v); setProfileOpen(false); }}
@@ -178,7 +186,7 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
                     {notifOpen && (
                         <div
                             style={{ background: "var(--bg-raised)", border: "1px solid var(--border)", boxShadow: "var(--shadow-lg)" }}
-                            className="absolute right-0 top-full mt-2 w-72 overflow-hidden rounded-xl"
+                            className="absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] sm:w-72 overflow-hidden rounded-xl"
                         >
                             <div style={{ borderBottom: "1px solid var(--border)" }} className="px-4 py-3">
                                 <h3 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>Notifications</h3>
@@ -190,17 +198,15 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
                     )}
                 </div>
 
-                {/* Divider */}
-                <div className="mx-1 h-5 w-px" style={{ background: "var(--border)" }} />
+                <div className="mx-0.5 h-5 w-px hidden sm:block" style={{ background: "var(--border)" }} />
 
-                {/* Profile */}
                 <div ref={profileRef} className="relative">
                     <button
                         onClick={() => { setProfileOpen((v) => !v); setNotifOpen(false); }}
-                        className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition-colors hover:bg-[var(--bg-overlay)]"
+                        className="flex items-center gap-2 rounded-lg px-1.5 py-1.5 text-sm transition-colors hover:bg-[var(--bg-overlay)]"
                     >
                         <div
-                            className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold"
+                            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold"
                             style={{ background: "var(--accent)", color: "var(--accent-fg)" }}
                         >
                             {initials}
@@ -214,7 +220,7 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
                             </p>
                         </div>
                         <ChevronDown
-                            className={`hidden h-3.5 w-3.5 sm:block transition-transform ${profileOpen ? "rotate-180" : ""}`}
+                            className={`hidden sm:block h-3.5 w-3.5 transition-transform ${profileOpen ? "rotate-180" : ""}`}
                             style={{ color: "var(--text-faint)" }}
                         />
                     </button>
@@ -222,11 +228,11 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
                     {profileOpen && (
                         <div
                             style={{ background: "var(--bg-raised)", border: "1px solid var(--border)", boxShadow: "var(--shadow-lg)" }}
-                            className="absolute right-0 top-full mt-2 w-52 overflow-hidden rounded-xl"
+                            className="absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] sm:w-52 overflow-hidden rounded-xl"
                         >
                             <div style={{ borderBottom: "1px solid var(--border)" }} className="px-4 py-3">
-                                <p className="text-[13px] font-semibold" style={{ color: "var(--text-primary)" }}>{userName}</p>
-                                <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>{userEmail}</p>
+                                <p className="text-[13px] font-semibold truncate" style={{ color: "var(--text-primary)" }}>{userName}</p>
+                                <p className="text-[11px] truncate" style={{ color: "var(--text-muted)" }}>{userEmail}</p>
                             </div>
                             <ul className="py-1.5">
                                 {[
@@ -237,9 +243,9 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
                                         <a
                                             href={href}
                                             style={{ color: "var(--text-secondary)" }}
-                                            className="flex w-full items-center gap-2.5 px-4 py-2 text-[13px] transition-colors hover:bg-[var(--bg-subtle)]"
+                                            className="flex w-full items-center gap-2.5 px-4 py-2.5 text-[13px] transition-colors hover:bg-[var(--bg-subtle)]"
                                         >
-                                            <Icon className="h-4 w-4" style={{ color: "var(--text-muted)" }} />
+                                            <Icon className="h-4 w-4 shrink-0" style={{ color: "var(--text-muted)" }} />
                                             {label}
                                         </a>
                                     </li>
@@ -247,11 +253,11 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
                             </ul>
                             <div style={{ borderTop: "1px solid var(--border)" }} className="py-1.5">
                                 <button
-                                    onClick={() => { /* signOut() */ }}
+                                    onClick={() => signOut({ callbackUrl: "/login" })}
                                     style={{ color: "var(--danger)" }}
-                                    className="flex w-full items-center gap-2.5 px-4 py-2 text-[13px] transition-colors hover:bg-[var(--danger-bg)]"
+                                    className="flex w-full items-center gap-2.5 px-4 py-2.5 text-[13px] transition-colors hover:bg-[var(--danger-bg)]"
                                 >
-                                    <LogOut className="h-4 w-4" />
+                                    <LogOut className="h-4 w-4 shrink-0" />
                                     Sign out
                                 </button>
                             </div>
