@@ -114,19 +114,6 @@ export default function InvoicesClient({ invoices }: { invoices: Invoice[] }) {
                         : undefined
                 }
             />
-
-            {/* Clear filters — only when filtered down with no results */}
-            {filtered.length === 0 && invoices.length > 0 && (
-                <div className="text-center pt-2">
-                    <button
-                        onClick={() => { setSearch(""); setStatusFilter("ALL"); }}
-                        style={{ color: "var(--accent)" }}
-                        className="text-sm hover:underline underline-offset-4"
-                    >
-                        Clear filters
-                    </button>
-                </div>
-            )}
         </div>
     );
 }
