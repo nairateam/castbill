@@ -48,7 +48,7 @@ export async function POST(
 
         // 6. Send the email via Resend
         const { error: sendError } = await resend.emails.send({
-            from: "CastBill <onboarding@resend.dev>",
+            from: "CastBill <invoices@theundercast.com>",
             to: invoice.clientEmail,
             subject: `Invoice #${invoice.invoiceNumber} from ${invoice.senderName}`,
             html: buildInvoiceEmail({
