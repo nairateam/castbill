@@ -36,7 +36,7 @@ export async function POST(
             );
         }
 
-        const invoiceUrl = `${process.env.NEXT_PUBLIC_APP_URL}/invoice/${invoice.id}`;
+        const invoiceUrl = `${process.env.NEXTAUTH_URL}/invoice/${invoice.id}`;
 
         const dueDateFormatted = invoice.dueDate
             ? new Date(invoice.dueDate).toLocaleDateString("en-US", {
