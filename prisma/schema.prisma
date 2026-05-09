@@ -19,7 +19,7 @@ model User {
 
 model Invoice {
   id            String        @id @default(cuid())
-  invoiceNumber String        @unique
+  invoiceNumber String
   clientName    String
   clientEmail   String
   clientPhone   String?
@@ -41,6 +41,8 @@ model Invoice {
   user          User          @relation(fields: [userId], references: [id])
   items         InvoiceItem[]
   currency  String  @default("NGN")
+
+  @@unique([userId, invoiceNumber])
 }
 
 model InvoiceItem {
