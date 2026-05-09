@@ -5,6 +5,10 @@ export type InvoiceTemplateData = {
   dueDate?: string;
   senderName: string;
   senderEmail: string;
+  clientPhone?: string;
+  senderPhone?: string;
+  senderAddress?: string;
+  clientAddress?: string;
   clientName: string;
   clientEmail: string;
   currency: string;
@@ -18,6 +22,7 @@ export type InvoiceTemplateData = {
   tax: number;
   discount: number;
   total: number;
+  notes: string;
 };
 
 export function buildInvoiceHTML(data: InvoiceTemplateData): string {
