@@ -1,26 +1,179 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --lavender: #d9dbf1;
+  --lavender-light: #ecedf8;
+  --lavender-dark: #b8bbdf;
+  --silver: #d0cdd7;
+  --silver-light: #e6e4ea;
+  --silver-dark: #b0acba;
+  --slate: #acb0bd;
+  --slate-light: #c4c7d1;
+  --slate-dark: #8b909f;
+  --teal: #416165;
+  --teal-light: #567c80;
+  --teal-dark: #2e484c;
+  --navy: #0b3948;
+  --navy-mid: #124f63;
+  --navy-light: #1a6880;
+
+  --bg: #f2f3fa;
+  --bg-subtle: #e8e9f4;
+  --bg-raised: #ffffff;
+  --bg-overlay: rgba(65, 97, 101, 0.06);
+
+  --border: rgba(11, 57, 72, 0.052);
+  --border-strong: rgba(11, 57, 72, 0.24);
+
+  --text-primary: #0b2230;
+  --text-secondary: #0b3948;
+  --text-muted: #416165;
+  --text-faint: #acb0bd;
+
+  --accent: #0b3948;
+  --accent-hover: #124f63;
+  --accent-dark: #071f28;
+  --accent-fg: #d9dbf1;
+
+  --accent2: #416165;
+  --accent2-hover: #567c80;
+  --accent2-fg: #ffffff;
+
+  --highlight: #d9dbf1;
+  --highlight-fg: #0b3948;
+
+  --success: #3a7d6e;
+  --success-bg: rgba(58, 125, 110, 0.10);
+  --warning: #8a6a2e;
+  --warning-bg: rgba(138, 106, 46, 0.12);
+  --danger: #a03030;
+  --danger-bg: rgba(160, 48, 48, 0.10);
+  --info: #416165;
+  --info-bg: rgba(65, 97, 101, 0.10);
+
+  --shadow-sm: 0 1px 3px rgba(11, 57, 72, 0.08), 0 1px 2px rgba(11, 57, 72, 0.05);
+  --shadow-md: 0 4px 12px rgba(11, 57, 72, 0.10), 0 2px 4px rgba(11, 57, 72, 0.05);
+  --shadow-lg: 0 12px 32px rgba(11, 57, 72, 0.12), 0 4px 8px rgba(11, 57, 72, 0.05);
+
+  --sidebar-bg: #FFF;
+  --sidebar-fg: #144353;
+  --sidebar-fg-active: #144353;
+  --sidebar-hover: rgba(217, 219, 241, 0.07);
+  --sidebar-active: rgba(217, 219, 241, 0.13);
+  --sidebar-border: rgba(217, 219, 241, 0.09);
+  --sidebar-accent: #d9dbf1;
+
+  --topnav-bg: #ffffff;
+  --topnav-border: rgba(11, 57, 72, 0.10);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+html.dark {
+  --bg: #060f14;
+  --bg-subtle: #0b1e27;
+  --bg-raised: #112633;
+  --bg-overlay: rgba(217, 219, 241, 0.05);
+
+  --border: rgba(172, 176, 189, 0.11);
+  --border-strong: rgba(172, 176, 189, 0.24);
+
+  --text-primary: #e4e6f4;
+  --text-secondary: #d9dbf1;
+  --text-muted: #acb0bd;
+  --text-faint: #6b707e;
+
+  --accent: #d9dbf1;
+  --accent-hover: #ecedf8;
+  --accent-dark: #b8bbdf;
+  --accent-fg: #0b3948;
+
+  --accent2: #416165;
+  --accent2-hover: #567c80;
+  --accent2-fg: #ffffff;
+
+  --highlight: #1a3a48;
+  --highlight-fg: #d9dbf1;
+
+  --success: #4a9e8c;
+  --success-bg: rgba(74, 158, 140, 0.12);
+  --warning: #c49a45;
+  --warning-bg: rgba(196, 154, 69, 0.12);
+  --danger: #d95c5c;
+  --danger-bg: rgba(217, 92, 92, 0.12);
+  --info: #acb0bd;
+  --info-bg: rgba(172, 176, 189, 0.10);
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.42);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.52);
+
+  --sidebar-bg: #071f28;
+  --sidebar-fg: #acb0bd;
+  --sidebar-fg-active: #d9dbf1;
+  --sidebar-hover: rgba(217, 219, 241, 0.06);
+  --sidebar-active: rgba(217, 219, 241, 0.11);
+  --sidebar-border: rgba(217, 219, 241, 0.07);
+  --sidebar-accent: #d9dbf1;
+
+  --topnav-bg: #0b1e27;
+  --topnav-border: rgba(172, 176, 189, 0.09);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: var(--font-lora), serif;
+  font-size: 14px;
+  line-height: 1.6;
+  transition: background 0.25s ease, color 0.25s ease;
+}
+
+.font-display {
+  font-family: 'DM Serif Display', serif;
+}
+
+.font-mono {
+  font-family: 'DM Mono', monospace;
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 99px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--slate);
+}
+
+:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: 0px;
+  border-radius: 4px;
+}
+
+@theme inline {
+  --color-background: var(--bg);
+  --color-foreground: var(--text-primary);
+  --font-sans: 'DM Sans', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+  --font-display: 'DM Serif Display', serif;
 }
