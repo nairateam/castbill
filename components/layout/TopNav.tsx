@@ -4,7 +4,11 @@ import { useState, useRef, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { useTheme } from "@/components/ThemeProvider";
 import { useSession } from "next-auth/react";
-import { Search, Bell, ChevronDown, Settings, LogOut, User, Moon, Sun, Command, X } from "lucide-react";
+import { Search, Bell, ChevronDown, Settings, LogOut, User, Moon, Sun, Command, X, Menu } from "lucide-react";
+
+interface TopNavProps {
+    onMenuClick: () => void;
+}
 
 const BREADCRUMB_MAP: Record<string, string> = {
     "/dashboard": "Overview",
@@ -28,7 +32,7 @@ function getInitials(name?: string | null, email?: string | null): string {
     return email ? email.slice(0, 2).toUpperCase() : "??";
 }
 
-export default function TopNav() {
+export default function TopNav({ onMenuClick }: TopNavProps) {
     const pathname = usePathname();
     const { data: session } = useSession();
     const { theme, toggle } = useTheme();
@@ -77,18 +81,28 @@ export default function TopNav() {
             style={{ background: "var(--topnav-bg)", borderBottom: "1px solid var(--topnav-border)" }}
             className="relative z-10 flex h-16 shrink-0 items-center justify-between px-4 sm:px-6"
         >
-            {/* Breadcrumb */}
-            <div className="flex items-center gap-2 text-sm">
-                <span style={{ color: "var(--text-muted)" }}>Dashboard</span>
-                {pageLabel !== "Overview" && (
-                    <>
-                        <span style={{ color: "var(--border-strong)" }}>/</span>
-                        <span className="font-semibold" style={{ color: "var(--text-primary)" }}>{pageLabel}</span>
-                    </>
-                )}
-                {pageLabel === "Overview" && (
-                    <span className="font-semibold" style={{ color: "var(--text-primary)" }}>Overview</span>
-                )}
+            <div className="flex items-center gap-3">
+                <button
+                    onClick={onMenuClick}
+                    style={{ color: "var(--text-muted)" }}
+                    className="flex lg:hidden h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-[var(--bg-overlay)]"
+                    aria-label="Open menu"
+                >
+                    <Menu className="h-5 w-5" />
+                </button>
+
+                <div className="flex items-center gap-2 text-sm">
+                    <span style={{ color: "var(--text-muted)" }}>Dashboard</span>
+                    {pageLabel !== "Overview" && (
+                        <>
+                            <span style={{ color: "var(--border-strong)" }}>/</span>
+                            <span className="font-semibold" style={{ color: "var(--text-primary)" }}>{pageLabel}</span>
+                        </>
+                    )}
+                    {pageLabel === "Overview" && (
+                        <span className="font-semibold" style={{ color: "var(--text-primary)" }}>Overview</span>
+                    )}
+                </div>
             </div>
 
             {/* Right controls */}

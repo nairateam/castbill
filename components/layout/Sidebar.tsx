@@ -5,13 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import {
-    LayoutDashboard,
-    FileText,
-    Users,
-    Receipt,
-    Settings,
-    HelpCircle,
-    ChevronLeft,
+    LayoutDashboard, FileText, Users, Receipt,
+    Settings, HelpCircle, ChevronLeft, X,
 } from "lucide-react";
 
 const NAV_ITEMS = [
@@ -36,7 +31,11 @@ function getInitials(name?: string | null, email?: string | null): string {
     return email ? email.slice(0, 2).toUpperCase() : "??";
 }
 
-export default function Sidebar() {
+interface Props {
+    onClose?: () => void;
+}
+
+export default function Sidebar({ onClose }: Props) {
     const pathname = usePathname();
     const { data: session } = useSession();
     const [collapsed, setCollapsed] = useState(false);
@@ -47,19 +46,17 @@ export default function Sidebar() {
 
     const NavLink = ({ item }: { item: typeof NAV_ITEMS[number] }) => {
         const Icon = item.icon;
-        const isActive =
-            pathname === item.href || pathname.startsWith(item.href + "/");
+        const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
         return (
             <Link
                 href={item.href}
+                onClick={onClose}
                 title={collapsed ? item.label : undefined}
                 style={{
                     background: isActive ? "var(--sidebar-active)" : "transparent",
                     color: isActive ? "var(--sidebar-fg-active)" : "var(--sidebar-fg)",
                 }}
-                className={`group relative flex items-center gap-3 rounded-lg py-2 text-sm font-medium
-                    transition-all duration-150 hover:bg-white/10
-                    ${collapsed ? "justify-center px-2" : "px-3"}`}
+                className={`group relative flex items-center gap-3 rounded-lg py-2 text-sm font-medium transition-all duration-150 hover:bg-white/10 ${collapsed ? "justify-center px-2" : "px-3"}`}
             >
                 {isActive && (
                     <span
@@ -87,7 +84,6 @@ export default function Sidebar() {
             }}
             className="relative z-30 flex h-full flex-col shrink-0"
         >
-            {/* Logo */}
             <div
                 style={{ borderBottom: "1px solid var(--sidebar-border)" }}
                 className={`flex h-16 shrink-0 items-center px-4 ${collapsed ? "justify-center" : "justify-between"}`}
@@ -107,18 +103,29 @@ export default function Sidebar() {
                 </Link>
 
                 {!collapsed && (
-                    <button
-                        onClick={() => setCollapsed(true)}
-                        style={{ color: "var(--sidebar-fg)" }}
-                        className="flex h-7 w-7 items-center justify-center rounded-md transition-colors hover:bg-white/10"
-                        aria-label="Collapse sidebar"
-                    >
-                        <ChevronLeft className="h-4 w-4" />
-                    </button>
+                    <div className="flex items-center gap-1">
+                        <button
+                            onClick={() => setCollapsed(true)}
+                            style={{ color: "var(--sidebar-fg)" }}
+                            className="hidden lg:flex h-7 w-7 items-center justify-center rounded-md transition-colors hover:bg-white/10"
+                            aria-label="Collapse sidebar"
+                        >
+                            <ChevronLeft className="h-4 w-4" />
+                        </button>
+                        {onClose && (
+                            <button
+                                onClick={onClose}
+                                style={{ color: "var(--sidebar-fg)" }}
+                                className="flex lg:hidden h-7 w-7 items-center justify-center rounded-md transition-colors hover:bg-white/10"
+                                aria-label="Close menu"
+                            >
+                                <X className="h-4 w-4" />
+                            </button>
+                        )}
+                    </div>
                 )}
             </div>
 
-            {/* Expand toggle when collapsed */}
             {collapsed && (
                 <button
                     onClick={() => setCollapsed(false)}
@@ -127,14 +134,13 @@ export default function Sidebar() {
                         border: "1px solid var(--sidebar-border)",
                         color: "var(--sidebar-fg)",
                     }}
-                    className="absolute -right-3 top-[72px] z-40 flex h-6 w-6 items-center justify-center rounded-full shadow-md hover:text-white transition-colors"
+                    className="absolute -right-3 top-[72px] z-40 hidden lg:flex h-6 w-6 items-center justify-center rounded-full shadow-md hover:text-white transition-colors"
                     aria-label="Expand sidebar"
                 >
                     <ChevronLeft className="h-3.5 w-3.5 rotate-180" />
                 </button>
             )}
 
-            {/* Nav */}
             <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto overflow-x-hidden px-3 py-4">
                 {!collapsed && (
                     <p className="mb-2 px-2 text-[10px] font-semibold uppercase tracking-widest"
@@ -142,26 +148,22 @@ export default function Sidebar() {
                         Main Menu
                     </p>
                 )}
-
                 {NAV_ITEMS.map((item) => <NavLink key={item.href} item={item} />)}
-
                 <div className="my-3" style={{ borderTop: "1px solid var(--sidebar-border)" }} />
-
                 {!collapsed && (
                     <p className="mb-2 px-2 text-[10px] font-semibold uppercase tracking-widest"
                         style={{ color: "var(--sidebar-fg)", opacity: 0.5 }}>
                         System
                     </p>
                 )}
-
                 {BOTTOM_ITEMS.map((item) => <NavLink key={item.href} item={item} />)}
             </nav>
 
-            {/* User profile */}
             <div style={{ borderTop: "1px solid var(--sidebar-border)" }} className="shrink-0 p-3">
                 {!collapsed ? (
                     <Link
                         href="/dashboard/settings"
+                        onClick={onClose}
                         className="flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left transition-colors hover:bg-white/10"
                     >
                         <div
