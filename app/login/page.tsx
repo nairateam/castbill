@@ -44,7 +44,7 @@ export default function LoginPage() {
                 loading={loading}
                 submitLabel="Sign in"
                 onSubmit={handleSubmit}
-                footer={<>No account? <Link href="/register" className="text-amber-400 hover:underline">Register</Link></>}
+                footer={<>No account? <Link href="/register" style={{ color: "var(--accent)" }} className="hover:underline">Register</Link></>}
             />
         </AuthLayout>
     );

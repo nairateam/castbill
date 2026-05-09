@@ -41,7 +41,6 @@ function RowActions({ invoice }: { invoice: Invoice }) {
     return (
         <>
             <div className="flex items-center justify-end gap-1">
-                {/* PDF — always visible */}
                 <a
                     href={`/api/invoice/${invoice.id}/pdf`}
                     download
@@ -52,7 +51,6 @@ function RowActions({ invoice }: { invoice: Invoice }) {
                     <FileDown size={15} />
                 </a>
 
-                {/* More actions */}
                 <Popover>
                     <PopoverTrigger
                         aria-label="More actions"
@@ -83,21 +81,15 @@ function RowActions({ invoice }: { invoice: Invoice }) {
                                 View invoice
                             </Link>
                         </PopoverItem>
-
                         <PopoverSeparator />
-
-                        <PopoverItem
-                            variant="danger"
-                            onClick={() => setConfirming(true)}
-                        >
+                        <PopoverItem variant="danger" onClick={() => setConfirming(true)}>
                             <Trash2 size={14} style={{ flexShrink: 0 }} />
                             Delete
                         </PopoverItem>
                     </PopoverContent>
                 </Popover>
-            </div>
+            </div >
 
-            {/* Confirm modal — outside the popover so it isn't clipped */}
             <ConfirmModal
                 open={confirming}
                 onClose={() => setConfirming(false)}
@@ -139,10 +131,10 @@ export default function InvoiceTable({ invoices, onClearFilters }: Props) {
             }}
             className="overflow-hidden rounded-xl"
         >
-            {/* Header */}
+            {/* Desktop table header */}
             <div
                 style={{ borderBottom: "1px solid var(--border)", background: "var(--bg-subtle)" }}
-                className="grid grid-cols-[auto_1fr_auto_auto_auto_auto] items-center gap-x-4 px-5 py-3"
+                className="hidden sm:grid grid-cols-[auto_1fr_auto_auto_auto_auto] items-center gap-x-4 px-5 py-3"
             >
                 {["Invoice", "Client", "Amount", "Status", "Date", ""].map((h) => (
                     <span
@@ -155,41 +147,70 @@ export default function InvoiceTable({ invoices, onClearFilters }: Props) {
                 ))}
             </div>
 
-            {/* Rows */}
-            <div className="divide-y divide-[var(--border)]" style={{ borderColor: "var(--border)" }}>
+            <div className="divide-y" style={{ borderColor: "var(--border)" }}>
                 {invoices.map((invoice) => (
-                    <div
-                        key={invoice.id}
-                        className="grid grid-cols-[auto_1fr_auto_auto_auto_auto] items-center gap-x-4 px-5 py-3.5 transition-colors hover:bg-[var(--bg-subtle)]"
-                    >
-                        <span className="font-mono text-sm font-medium" style={{ color: "var(--accent)" }}>
-                            #{invoice.invoiceNumber}
-                        </span>
-
-                        <div className="min-w-0">
-                            <p className="truncate text-sm font-medium" style={{ color: "var(--text-primary)" }}>
-                                {invoice.clientName}
-                            </p>
-                            <p className="truncate text-xs" style={{ color: "var(--text-muted)" }}>
-                                {invoice.clientEmail}
-                            </p>
+                    <div key={invoice.id}>
+                        {/* Mobile card */}
+                        <div
+                            className="sm:hidden px-4 py-3.5 transition-colors hover:bg-[var(--bg-subtle)]"
+                        >
+                            <div className="flex items-start justify-between gap-2 mb-2">
+                                <div className="min-w-0">
+                                    <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                                        <span className="font-mono text-xs font-medium" style={{ color: "var(--accent)" }}>
+                                            #{invoice.invoiceNumber}
+                                        </span>
+                                        <StatusBadge status={invoice.status} />
+                                    </div>
+                                    <p className="truncate text-sm font-medium" style={{ color: "var(--text-primary)" }}>
+                                        {invoice.clientName}
+                                    </p>
+                                    <p className="truncate text-xs" style={{ color: "var(--text-muted)" }}>
+                                        {invoice.clientEmail}
+                                    </p>
+                                </div>
+                                <RowActions invoice={invoice} />
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <span className="font-mono text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
+                                    {formatAmount(invoice.total, invoice.currency)}
+                                </span>
+                                <span className="text-xs" style={{ color: "var(--text-muted)" }}>
+                                    {new Date(invoice.createdAt).toLocaleDateString("en-US", {
+                                        month: "short",
+                                        day: "numeric",
+                                        year: "numeric",
+                                    })}
+                                </span>
+                            </div>
                         </div>
 
-                        <span className="font-mono text-sm" style={{ color: "var(--text-primary)" }}>
-                            {formatAmount(invoice.total, invoice.currency)}
-                        </span>
-
-                        <StatusBadge status={invoice.status} />
-
-                        <span className="text-sm whitespace-nowrap" style={{ color: "var(--text-muted)" }}>
-                            {new Date(invoice.createdAt).toLocaleDateString("en-US", {
-                                month: "short",
-                                day: "numeric",
-                                year: "numeric",
-                            })}
-                        </span>
-
-                        <RowActions invoice={invoice} />
+                        {/* Desktop row */}
+                        <div className="hidden sm:grid grid-cols-[auto_1fr_auto_auto_auto_auto] items-center gap-x-4 px-5 py-3.5 transition-colors hover:bg-[var(--bg-subtle)]">
+                            <span className="font-mono text-sm font-medium" style={{ color: "var(--accent)" }}>
+                                #{invoice.invoiceNumber}
+                            </span>
+                            <div className="min-w-0">
+                                <p className="truncate text-sm font-medium" style={{ color: "var(--text-primary)" }}>
+                                    {invoice.clientName}
+                                </p>
+                                <p className="truncate text-xs" style={{ color: "var(--text-muted)" }}>
+                                    {invoice.clientEmail}
+                                </p>
+                            </div>
+                            <span className="font-mono text-sm" style={{ color: "var(--text-primary)" }}>
+                                {formatAmount(invoice.total, invoice.currency)}
+                            </span>
+                            <StatusBadge status={invoice.status} />
+                            <span className="text-sm whitespace-nowrap" style={{ color: "var(--text-muted)" }}>
+                                {new Date(invoice.createdAt).toLocaleDateString("en-US", {
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                })}
+                            </span>
+                            <RowActions invoice={invoice} />
+                        </div>
                     </div>
                 ))}
             </div>

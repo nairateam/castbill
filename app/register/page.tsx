@@ -49,7 +49,7 @@ export default function RegisterPage() {
                 loading={loading}
                 submitLabel="Create account"
                 onSubmit={handleSubmit}
-                footer={<>Already have an account? <Link href="/login" className="text-amber-400 hover:underline">Sign in</Link></>}
+                footer={<>Already have an account? <Link href="/login" style={{ color: "var(--accent)" }} className="hover:underline">Sign in</Link></>}
             />
         </AuthLayout>
     );

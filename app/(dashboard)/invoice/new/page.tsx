@@ -96,18 +96,18 @@ export default function NewInvoicePage() {
         "px-2 py-0.5 rounded mb-4",
     ].join(" ");
 
-    const cardCls = "rounded-xl p-5 mb-4 border bg-[var(--bg-raised)] border-[var(--border-strong)]";
+    const cardCls = "rounded-xl p-4 sm:p-5 mb-4 border bg-[var(--bg-raised)] border-[var(--border-strong)]";
 
     return (
-        <div className="px-8 py-10 max-w-3xl mx-auto">
+        <div className="sm:px-8 py-6 sm:py-10 max-w-3xl mx-auto">
             <style>{`
                 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
                 input[type="date"]::-webkit-calendar-picker-indicator { opacity: .4; cursor: pointer; }
             `}</style>
 
-            <div className="mb-8">
+            <div className="mb-6 sm:mb-8">
                 <h1
-                    className="text-4xl mb-1"
+                    className="text-3xl sm:text-4xl mb-1"
                     style={{ fontFamily: "'DM Serif Display', serif", color: "var(--text-primary)" }}
                 >
                     New Invoice<span style={{ color: "var(--accent2)" }}>.</span>
@@ -119,7 +119,7 @@ export default function NewInvoicePage() {
 
             <section className={cardCls}>
                 <div className={sectionTagCls}>From — You</div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label className={labelCls}>Name <span style={{ color: "var(--accent2)" }}>*</span></label>
                         <input className={inputCls} value={senderName} onChange={(e) => setSenderName(e.target.value)} placeholder="Your name or company" />
@@ -141,7 +141,7 @@ export default function NewInvoicePage() {
 
             <section className={cardCls}>
                 <div className={sectionTagCls}>Bill To — Client</div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label className={labelCls}>Name <span style={{ color: "var(--accent2)" }}>*</span></label>
                         <input className={inputCls} value={clientName} onChange={(e) => setClientName(e.target.value)} placeholder="Client name or company" />
@@ -163,7 +163,8 @@ export default function NewInvoicePage() {
 
             <section className={cardCls}>
                 <div className={sectionTagCls}>Line Items</div>
-                <div className="grid grid-cols-12 gap-3 px-1 mb-2">
+
+                <div className="hidden sm:grid grid-cols-12 gap-3 px-1 mb-2">
                     {(["Description", "Qty", "Rate", "Amount", ""] as const).map((h, i) => (
                         <span
                             key={i}
@@ -175,43 +176,90 @@ export default function NewInvoicePage() {
                     ))}
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-3">
                     {items.map((item, i) => (
-                        <div key={i} className="grid grid-cols-12 gap-3 items-center">
-                            <input
-                                className={`col-span-5 ${inputCls}`}
-                                value={item.description}
-                                onChange={(e) => updateItem(i, "description", e.target.value)}
-                                placeholder="Service or product"
-                            />
-                            <input
-                                type="number" min={1}
-                                className={`col-span-2 ${inputCls} text-center`}
-                                value={item.quantity}
-                                onChange={(e) => updateItem(i, "quantity", e.target.value)}
-                            />
-                            <input
-                                type="number" min={0} step={0.01}
-                                className={`col-span-2 ${inputCls}`}
-                                value={item.rate}
-                                onChange={(e) => updateItem(i, "rate", e.target.value)}
-                            />
-                            <div
-                                className="col-span-2 text-right font-mono text-sm font-medium"
-                                style={{ color: "var(--accent2)" }}
-                            >
-                                {sym}{(item.quantity * item.rate).toFixed(2)}
+                        <div key={i} className="relative">
+                            <div className="sm:hidden space-y-2 p-3 rounded-lg border" style={{ borderColor: "var(--border-strong)", background: "var(--bg)" }}>
+                                <div className="flex items-center justify-between gap-2">
+                                    <span className="text-[10px] font-mono uppercase tracking-widest" style={{ color: "var(--text-faint)" }}>
+                                        Item {i + 1}
+                                    </span>
+                                    {items.length > 1 && (
+                                        <button
+                                            onClick={() => setItems((prev) => prev.filter((_, idx) => idx !== i))}
+                                            className="text-sm transition-colors hover:text-[var(--danger)]"
+                                            style={{ color: "var(--text-faint)" }}
+                                        >
+                                            ×
+                                        </button>
+                                    )}
+                                </div>
+                                <input
+                                    className={inputCls}
+                                    value={item.description}
+                                    onChange={(e) => updateItem(i, "description", e.target.value)}
+                                    placeholder="Description"
+                                />
+                                <div className="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label className={labelCls}>Qty</label>
+                                        <input
+                                            type="number" min={1}
+                                            className={`${inputCls} text-center`}
+                                            value={item.quantity}
+                                            onChange={(e) => updateItem(i, "quantity", e.target.value)}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className={labelCls}>Rate ({sym})</label>
+                                        <input
+                                            type="number" min={0} step={0.01}
+                                            className={inputCls}
+                                            value={item.rate}
+                                            onChange={(e) => updateItem(i, "rate", e.target.value)}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="flex justify-end">
+                                    <span className="font-mono text-sm font-medium" style={{ color: "var(--accent2)" }}>
+                                        {sym}{(item.quantity * item.rate).toFixed(2)}
+                                    </span>
+                                </div>
                             </div>
-                            <div className="col-span-1 flex justify-end">
-                                {items.length > 1 && (
-                                    <button
-                                        onClick={() => setItems((prev) => prev.filter((_, idx) => idx !== i))}
-                                        className="w-7 h-7 flex items-center justify-center rounded text-lg leading-none transition-colors hover:text-[var(--danger,#a03030)]"
-                                        style={{ color: "var(--text-faint)" }}
-                                    >
-                                        ×
-                                    </button>
-                                )}
+
+                            <div className="hidden sm:grid grid-cols-12 gap-3 items-center">
+                                <input
+                                    className={`col-span-5 ${inputCls}`}
+                                    value={item.description}
+                                    onChange={(e) => updateItem(i, "description", e.target.value)}
+                                    placeholder="Service or product"
+                                />
+                                <input
+                                    type="number" min={1}
+                                    className={`col-span-2 ${inputCls} text-center`}
+                                    value={item.quantity}
+                                    onChange={(e) => updateItem(i, "quantity", e.target.value)}
+                                />
+                                <input
+                                    type="number" min={0} step={0.01}
+                                    className={`col-span-2 ${inputCls}`}
+                                    value={item.rate}
+                                    onChange={(e) => updateItem(i, "rate", e.target.value)}
+                                />
+                                <div className="col-span-2 text-right font-mono text-sm font-medium" style={{ color: "var(--accent2)" }}>
+                                    {sym}{(item.quantity * item.rate).toFixed(2)}
+                                </div>
+                                <div className="col-span-1 flex justify-end">
+                                    {items.length > 1 && (
+                                        <button
+                                            onClick={() => setItems((prev) => prev.filter((_, idx) => idx !== i))}
+                                            className="w-7 h-7 flex items-center justify-center rounded text-lg leading-none transition-colors hover:text-[var(--danger)]"
+                                            style={{ color: "var(--text-faint)" }}
+                                        >
+                                            ×
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     ))}
@@ -228,7 +276,7 @@ export default function NewInvoicePage() {
 
             <section className={cardCls}>
                 <div className={sectionTagCls}>Adjustments & Notes</div>
-                <div className="grid grid-cols-4 gap-4 mb-4">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
                     <div>
                         <label className={labelCls}>Currency</label>
                         <select
@@ -270,7 +318,7 @@ export default function NewInvoicePage() {
             </section>
 
             <div
-                className="rounded-xl p-5 mb-5 border"
+                className="rounded-xl p-4 sm:p-5 mb-5 border"
                 style={{ background: "var(--bg-subtle)", borderColor: "var(--border)" }}
             >
                 <TotalsBlock

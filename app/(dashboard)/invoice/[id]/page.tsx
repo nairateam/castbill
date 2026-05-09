@@ -32,12 +32,13 @@ export default async function InvoiceDetailPage({
     const badge = statusStyles[invoice.status] ?? statusStyles.DRAFT;
 
     return (
-        <div className="px-8 py-10 max-w-3xl mx-auto">
+        <div className="sm:px-8 py-6 sm:py-10 max-w-3xl mx-auto">
             <style>{`
                 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
             `}</style>
 
-            <div className="flex items-start justify-between mb-8">
+            {/* Header */}
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-6 sm:mb-8">
                 <div>
                     <p
                         className="font-mono text-[9px] tracking-widest uppercase mb-2"
@@ -46,12 +47,12 @@ export default async function InvoiceDetailPage({
                         Invoice
                     </p>
                     <h1
-                        className="text-4xl mb-3"
+                        className="text-3xl sm:text-4xl mb-3"
                         style={{ fontFamily: "'DM Serif Display', serif", color: "var(--text-primary)" }}
                     >
                         #{invoice.invoiceNumber}
                     </h1>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 flex-wrap">
                         <span
                             className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-mono text-[11px] tracking-wider font-medium"
                             style={{ background: badge.bg, color: badge.color }}
@@ -78,14 +79,17 @@ export default async function InvoiceDetailPage({
                     </div>
                 </div>
 
-                <InvoiceActions
-                    invoiceId={invoice.id}
-                    clientEmail={invoice.clientEmail}
-                    status={invoice.status}
-                />
+                <div className="sm:flex-shrink-0">
+                    <InvoiceActions
+                        invoiceId={invoice.id}
+                        clientEmail={invoice.clientEmail}
+                        status={invoice.status}
+                    />
+                </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 mb-6">
+            {/* Party cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
                 <PartyCard label="From" name={invoice.senderName} email={invoice.senderEmail} phone={invoice.senderPhone} address={invoice.senderAddress} />
                 <PartyCard label="Bill To" name={invoice.clientName} email={invoice.clientEmail} phone={invoice.clientPhone} address={invoice.clientAddress} />
             </div>
