@@ -6,6 +6,7 @@ import { InvoiceActions } from "@/components/ui/invoice/InvoiceActions";
 import PartyCard from "@/components/ui/invoice/PartyCard";
 import LineItemsTable from "@/components/ui/invoice/LineItemsTable";
 import TotalsBlock from "@/components/ui/invoice/TotalsBlock";
+import Image from "next/image";
 
 export default async function InvoiceDetailPage({
     params,
@@ -37,9 +38,19 @@ export default async function InvoiceDetailPage({
                 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
             `}</style>
 
-            {/* Header */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-6 sm:mb-8">
                 <div>
+                    {invoice.senderLogoUrl && (
+                        <div className="mb-4">
+                            <Image
+                                src={invoice.senderLogoUrl}
+                                alt="Company logo"
+                                width={80}
+                                height={80}
+                                className="object-contain rounded"
+                            />
+                        </div>
+                    )}
                     <p
                         className="font-mono text-[9px] tracking-widest uppercase mb-2"
                         style={{ color: "var(--text-faint)" }}
@@ -88,10 +99,22 @@ export default async function InvoiceDetailPage({
                 </div>
             </div>
 
-            {/* Party cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
-                <PartyCard label="From" name={invoice.senderName} email={invoice.senderEmail} phone={invoice.senderPhone} address={invoice.senderAddress} />
-                <PartyCard label="Bill To" name={invoice.clientName} email={invoice.clientEmail} phone={invoice.clientPhone} address={invoice.clientAddress} />
+                <PartyCard
+                    label="From"
+                    name={invoice.senderName}
+                    email={invoice.senderEmail}
+                    phone={invoice.senderPhone}
+                    address={invoice.senderAddress}
+                    vatNumber={invoice.senderVatNumber}
+                />
+                <PartyCard
+                    label="Bill To"
+                    name={invoice.clientName}
+                    email={invoice.clientEmail}
+                    phone={invoice.clientPhone}
+                    address={invoice.clientAddress}
+                />
             </div>
 
             <LineItemsTable items={invoice.items} currency={invoice.currency} />
@@ -100,6 +123,7 @@ export default async function InvoiceDetailPage({
                 <TotalsBlock
                     subtotal={invoice.subtotal}
                     tax={invoice.tax ?? 0}
+                    taxRate={invoice.tax && invoice.subtotal ? (invoice.tax / invoice.subtotal) * 100 : 0}
                     discount={invoice.discount ?? 0}
                     total={invoice.total}
                     currency={invoice.currency}

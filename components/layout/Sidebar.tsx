@@ -17,7 +17,7 @@ const NAV_ITEMS = [
 ];
 
 const BOTTOM_ITEMS = [
-    { label: "Settings", icon: Settings, href: "/dashboard/settings" },
+    { label: "Settings", icon: Settings, href: "/account" },
     { label: "Help & Support", icon: HelpCircle, href: "/dashboard/help" },
 ];
 

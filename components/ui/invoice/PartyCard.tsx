@@ -4,9 +4,10 @@ type Props = {
     email: string;
     phone?: string | null;
     address?: string | null;
+    vatNumber?: string | null;
 };
 
-export default function PartyCard({ label, name, email, phone, address }: Props) {
+export default function PartyCard({ label, name, email, phone, address, vatNumber }: Props) {
     return (
         <div
             className="rounded-xl p-4 border"
@@ -24,6 +25,11 @@ export default function PartyCard({ label, name, email, phone, address }: Props)
             <p className="text-xs" style={{ color: "var(--text-muted)" }}>{email}</p>
             {phone && <p className="text-xs" style={{ color: "var(--text-faint)" }}>{phone}</p>}
             {address && <p className="text-xs" style={{ color: "var(--text-faint)" }}>{address}</p>}
+            {vatNumber && (
+                <p className="text-xs font-mono mt-1.5 pt-1.5 border-t" style={{ color: "var(--text-faint)", borderColor: "var(--border)" }}>
+                    VAT / RC: {vatNumber}
+                </p>
+            )}
         </div>
     );
 }

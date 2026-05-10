@@ -7,14 +7,15 @@ type Props = {
     inputCls: string;
     labelCls: string;
     accentColor?: string;
+    namePlaceholder?: string;
 };
 
-export default function PartyFields({ label, name, onName, email, onEmail, phone, onPhone, address, onAddress, inputCls, labelCls, accentColor = "var(--accent2)" }: Props) {
+export default function PartyFields({ label, name, onName, email, onEmail, phone, onPhone, address, onAddress, inputCls, labelCls, accentColor = "var(--accent2)", namePlaceholder }: Props) {
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
                 <label className={labelCls}>Name <span style={{ color: accentColor }}>*</span></label>
-                <input className={inputCls} value={name} onChange={(e) => onName(e.target.value)} placeholder={label === "From — You" ? "Your name or company" : "Client name or company"} />
+                <input className={inputCls} value={name} onChange={(e) => onName(e.target.value)} placeholder={namePlaceholder ?? (label === "From — You" ? "Your name or company" : "Client name or company")} />
             </div>
             <div>
                 <label className={labelCls}>Email <span style={{ color: accentColor }}>*</span></label>

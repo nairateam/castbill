@@ -7,6 +7,29 @@ datasource db {
   provider = "postgresql"
 }
 
+model Profile {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id])
+  type            ProfileType @default(INDIVIDUAL)
+  name            String?
+  email           String?
+  phone           String?
+  address         String?
+  companyName     String?
+  vatNumber       String?
+  logoUrl         String?
+  defaultCurrency String   @default("NGN")
+  defaultTaxRate  Float    @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+enum ProfileType {
+  INDIVIDUAL
+  COMPANY
+}
+
 model User {
   id        String    @id @default(cuid())
   email     String    @unique
@@ -16,6 +39,7 @@ model User {
   updatedAt DateTime  @updatedAt
   invoices  Invoice[]
   clients   Client[]
+  profile   Profile?
 }
 
 model Invoice {
@@ -29,6 +53,8 @@ model Invoice {
   senderEmail   String
   senderPhone   String?
   senderAddress String?
+  senderLogoUrl   String?
+  senderVatNumber String?
   subtotal      Float
   discount      Float?
   tax           Float?

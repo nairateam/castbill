@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { CURRENCIES, CurrencyCode, getSymbol } from "@/lib/currency";
@@ -8,14 +8,18 @@ import FormCard from "@/components/ui/invoice/FormCard";
 import PartyFields from "@/components/ui/invoice/PartyFields";
 import { Client, useClients } from "@/hooks/useClients";
 import ClientSelector from "@/components/ui/invoice/ClientSelector";
-import { Save, SendHorizontal } from "lucide-react";
+import { Save, SendHorizontal, User, Building2 } from "lucide-react";
 
 type Item = { description: string; quantity: number; rate: number };
+type SenderType = "INDIVIDUAL" | "COMPANY";
 const emptyItem = (): Item => ({ description: "", quantity: 1, rate: 0 });
 
 export default function NewInvoicePage() {
     const router = useRouter();
     const [loading, setLoading] = useState<"draft" | "send" | null>(null);
+    const [profileData, setProfileData] = useState<any>(null);
+    const [hasProfile, setHasProfile] = useState<boolean | null>(null);
+    const [senderType, setSenderType] = useState<SenderType>("INDIVIDUAL");
 
     const [senderName, setSenderName] = useState("");
     const [senderEmail, setSenderEmail] = useState("");
@@ -37,6 +41,38 @@ export default function NewInvoicePage() {
     const { clients } = useClients();
     const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
     const [saveClient, setSaveClient] = useState(false);
+
+    const applyProfile = (profile: any, type: SenderType) => {
+        if (type === "COMPANY") {
+            setSenderName(profile.companyName || profile.name || "");
+        } else {
+            setSenderName(profile.name || "");
+        }
+        setSenderEmail(profile.email || "");
+        setSenderPhone(profile.phone || "");
+        setSenderAddress(profile.address || "");
+    };
+
+    useEffect(() => {
+        fetch("/api/profile")
+            .then((r) => r.json())
+            .then(({ profile }) => {
+                setHasProfile(!!profile);
+                if (!profile) return;
+                setProfileData(profile);
+                const type = profile.type as SenderType;
+                setSenderType(type);
+                applyProfile(profile, type);
+                if (profile.defaultCurrency) setCurrency(profile.defaultCurrency);
+                if (profile.defaultTaxRate) setTaxRate(profile.defaultTaxRate);
+            })
+            .catch(() => setHasProfile(false));
+    }, []);
+
+    const handleSenderTypeSwitch = (type: SenderType) => {
+        setSenderType(type);
+        if (profileData) applyProfile(profileData, type);
+    };
 
     const sym = getSymbol(currency);
 
@@ -109,6 +145,8 @@ export default function NewInvoicePage() {
                 senderName, senderEmail,
                 senderPhone: senderPhone || undefined,
                 senderAddress: senderAddress || undefined,
+                senderLogoUrl: senderType === "COMPANY" ? profileData?.logoUrl || undefined : undefined,
+                senderVatNumber: senderType === "COMPANY" ? profileData?.vatNumber || undefined : undefined,
                 clientName, clientEmail,
                 clientPhone: clientPhone || undefined,
                 clientAddress: clientAddress || undefined,
@@ -142,16 +180,13 @@ export default function NewInvoicePage() {
         setLoading("send");
         try {
             const invoice = await createInvoice();
-
             const sendRes = await fetch(`/api/invoice/${invoice.id}/send`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: clientEmail }),
             });
-
             const sendData = await sendRes.json();
             if (!sendRes.ok) throw new Error(sendData.error || "Invoice created but failed to send.");
-
             toast.success(`Invoice created and sent to ${clientEmail}!`);
             router.push(`/invoice/${invoice.id}`);
         } catch (err: any) {
@@ -189,7 +224,44 @@ export default function NewInvoicePage() {
                 </p>
             </div>
 
+            {hasProfile === false && (
+                <a
+                    href="/account"
+                    className="flex items-center gap-2 text-xs px-4 py-2.5 rounded-lg border mb-6 transition-colors hover:border-[var(--accent2)]"
+                    style={{
+                        borderColor: "var(--border-strong)",
+                        background: "var(--bg-raised)",
+                        color: "var(--text-muted)",
+                    }}
+                >
+                    <span style={{ color: "var(--accent2)" }}>→</span>
+                    Set up your profile to auto-fill invoices faster
+                </a>
+            )
+            }
+
             <FormCard tag="From — You">
+                <div
+                    className="rounded-lg p-1 flex gap-1 mb-4 w-fit"
+                    style={{ background: "var(--bg-raised)", border: "1px solid var(--border-strong)" }}
+                >
+                    {(["INDIVIDUAL", "COMPANY"] as SenderType[]).map((t) => (
+                        <button
+                            key={t}
+                            onClick={() => handleSenderTypeSwitch(t)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all"
+                            style={
+                                senderType === t
+                                    ? { background: "var(--accent)", color: "var(--accent-fg)" }
+                                    : { color: "var(--text-muted)" }
+                            }
+                        >
+                            {t === "INDIVIDUAL" ? <User size={12} /> : <Building2 size={12} />}
+                            {t === "INDIVIDUAL" ? "Individual" : "Company"}
+                        </button>
+                    ))}
+                </div>
+
                 <PartyFields
                     label="From — You"
                     name={senderName} onName={setSenderName}
@@ -198,7 +270,14 @@ export default function NewInvoicePage() {
                     address={senderAddress} onAddress={setSenderAddress}
                     inputCls={inputCls}
                     labelCls={labelCls}
+                    namePlaceholder={senderType === "COMPANY" ? "Acme Ltd." : "Ada Obi"}
                 />
+
+                {senderType === "COMPANY" && profileData?.vatNumber && (
+                    <p className="mt-2 text-xs font-mono" style={{ color: "var(--text-faint)" }}>
+                        VAT / RC: {profileData.vatNumber}
+                    </p>
+                )}
             </FormCard>
 
             <FormCard tag="Bill To — Client">
@@ -413,6 +492,6 @@ export default function NewInvoicePage() {
                     {loading === "send" ? "Sending…" : "Create & Send"}
                 </button>
             </div>
-        </div>
+        </div >
     );
 }
