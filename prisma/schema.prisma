@@ -15,6 +15,7 @@ model User {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   invoices  Invoice[]
+  clients   Client[]
 }
 
 model Invoice {
@@ -41,6 +42,8 @@ model Invoice {
   user          User          @relation(fields: [userId], references: [id])
   items         InvoiceItem[]
   currency  String  @default("NGN")
+  clientId  String?
+  client    Client?  @relation(fields: [clientId], references: [id])
 
   @@unique([userId, invoiceNumber])
 }
@@ -59,4 +62,17 @@ enum InvoiceStatus {
   DRAFT
   SENT
   PAID
+}
+
+model Client {
+    id        String   @id @default(cuid())
+    userId    String
+    name      String
+    email     String
+    phone     String?
+    address   String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime  @updatedAt
+    user      User     @relation(fields: [userId], references: [id])
+    invoices  Invoice[]
 }

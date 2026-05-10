@@ -4,13 +4,18 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { CURRENCIES, CurrencyCode, getSymbol } from "@/lib/currency";
 import TotalsBlock from "@/components/ui/invoice/TotalsBlock";
+import FormCard from "@/components/ui/invoice/FormCard";
+import PartyFields from "@/components/ui/invoice/PartyFields";
+import { Client, useClients } from "@/hooks/useClients";
+import ClientSelector from "@/components/ui/invoice/ClientSelector";
+import { Save, SendHorizontal } from "lucide-react";
 
 type Item = { description: string; quantity: number; rate: number };
 const emptyItem = (): Item => ({ description: "", quantity: 1, rate: 0 });
 
 export default function NewInvoicePage() {
     const router = useRouter();
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState<"draft" | "send" | null>(null);
 
     const [senderName, setSenderName] = useState("");
     const [senderEmail, setSenderEmail] = useState("");
@@ -29,6 +34,10 @@ export default function NewInvoicePage() {
     const [notes, setNotes] = useState("");
     const [currency, setCurrency] = useState<CurrencyCode>("NGN");
 
+    const { clients } = useClients();
+    const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
+    const [saveClient, setSaveClient] = useState(false);
+
     const sym = getSymbol(currency);
 
     const updateItem = (i: number, field: keyof Item, value: string) => {
@@ -45,39 +54,110 @@ export default function NewInvoicePage() {
     const taxAmount = (subtotal * taxRate) / 100;
     const total = subtotal + taxAmount - discount;
 
-    const handleSubmit = async () => {
-        if (!senderName || !senderEmail) return toast.error("Sender details are required.");
-        if (!clientName || !clientEmail) return toast.error("Client details are required.");
-        if (items.some((i) => !i.description || i.quantity <= 0 || i.rate <= 0))
-            return toast.error("All items need a description, quantity and rate.");
+    const validateDraft = () => {
+        if (!senderName) { toast.error("At least add your name to save a draft."); return false; }
+        return true;
+    };
 
-        setLoading(true);
-        try {
-            const res = await fetch("/api/invoice", {
+    const validateFull = () => {
+        if (!senderName || !senderEmail) { toast.error("Sender details are required."); return false; }
+        if (!clientName || !clientEmail) { toast.error("Client details are required."); return false; }
+        if (items.some((i) => !i.description || i.quantity <= 0 || i.rate <= 0)) {
+            toast.error("All items need a description, quantity and rate.");
+            return false;
+        }
+        return true;
+    };
+
+    const handleClientSelect = (client: Client | null) => {
+        setSelectedClientId(client?.id ?? null);
+        if (client) {
+            setClientName(client.name);
+            setClientEmail(client.email);
+            setClientPhone(client.phone ?? "");
+            setClientAddress(client.address ?? "");
+        } else {
+            setClientName("");
+            setClientEmail("");
+            setClientPhone("");
+            setClientAddress("");
+        }
+    };
+
+    const createInvoice = async () => {
+        let clientId = selectedClientId;
+
+        if (!selectedClientId && saveClient && clientName && clientEmail) {
+            const clientRes = await fetch("/api/clients", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    senderName, senderEmail,
-                    senderPhone: senderPhone || undefined,
-                    senderAddress: senderAddress || undefined,
-                    clientName, clientEmail,
-                    clientPhone: clientPhone || undefined,
-                    clientAddress: clientAddress || undefined,
-                    items, taxRate, discount, currency,
-                    dueDate: dueDate || undefined,
-                    notes: notes || undefined,
+                    name: clientName,
+                    email: clientEmail,
+                    phone: clientPhone || undefined,
+                    address: clientAddress || undefined,
                 }),
             });
+            const clientData = await clientRes.json();
+            clientId = clientData.client?.id ?? null;
+        }
 
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error || "Failed to create invoice");
+        const res = await fetch("/api/invoice", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                senderName, senderEmail,
+                senderPhone: senderPhone || undefined,
+                senderAddress: senderAddress || undefined,
+                clientName, clientEmail,
+                clientPhone: clientPhone || undefined,
+                clientAddress: clientAddress || undefined,
+                clientId: clientId || undefined,
+                items, taxRate, discount, currency,
+                dueDate: dueDate || undefined,
+                notes: notes || undefined,
+            }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Failed to create invoice");
+        return data.invoice;
+    };
 
-            toast.success("Invoice created!");
-            router.push(`/invoice/${data.invoice.id}`);
+    const handleDraft = async () => {
+        if (!validateDraft()) return;
+        setLoading("draft");
+        try {
+            const invoice = await createInvoice();
+            toast.success("Draft saved!");
+            router.push(`/invoice/${invoice.id}`);
         } catch (err: any) {
             toast.error(err.message);
         } finally {
-            setLoading(false);
+            setLoading(null);
+        }
+    };
+
+    const handleCreateAndSend = async () => {
+        if (!validateFull()) return;
+        setLoading("send");
+        try {
+            const invoice = await createInvoice();
+
+            const sendRes = await fetch(`/api/invoice/${invoice.id}/send`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: clientEmail }),
+            });
+
+            const sendData = await sendRes.json();
+            if (!sendRes.ok) throw new Error(sendData.error || "Invoice created but failed to send.");
+
+            toast.success(`Invoice created and sent to ${clientEmail}!`);
+            router.push(`/invoice/${invoice.id}`);
+        } catch (err: any) {
+            toast.error(err.message);
+        } finally {
+            setLoading(null);
         }
     };
 
@@ -89,14 +169,6 @@ export default function NewInvoicePage() {
     ].join(" ");
 
     const labelCls = "block text-xs font-medium text-[var(--text-muted)] mb-1.5";
-
-    const sectionTagCls = [
-        "inline-block font-mono text-[9px] tracking-widest uppercase",
-        "bg-[var(--highlight)] text-[var(--highlight-fg)]",
-        "px-2 py-0.5 rounded mb-4",
-    ].join(" ");
-
-    const cardCls = "rounded-xl p-4 sm:p-5 mb-4 border bg-[var(--bg-raised)] border-[var(--border-strong)]";
 
     return (
         <div className="sm:px-8 py-6 sm:py-10 max-w-3xl mx-auto">
@@ -117,53 +189,40 @@ export default function NewInvoicePage() {
                 </p>
             </div>
 
-            <section className={cardCls}>
-                <div className={sectionTagCls}>From — You</div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label className={labelCls}>Name <span style={{ color: "var(--accent2)" }}>*</span></label>
-                        <input className={inputCls} value={senderName} onChange={(e) => setSenderName(e.target.value)} placeholder="Your name or company" />
-                    </div>
-                    <div>
-                        <label className={labelCls}>Email <span style={{ color: "var(--accent2)" }}>*</span></label>
-                        <input type="email" className={inputCls} value={senderEmail} onChange={(e) => setSenderEmail(e.target.value)} placeholder="you@company.com" />
-                    </div>
-                    <div>
-                        <label className={labelCls}>Phone</label>
-                        <input className={inputCls} value={senderPhone} onChange={(e) => setSenderPhone(e.target.value)} placeholder="+234 801 234 5678" />
-                    </div>
-                    <div>
-                        <label className={labelCls}>Address</label>
-                        <input className={inputCls} value={senderAddress} onChange={(e) => setSenderAddress(e.target.value)} placeholder="123 Main St, City" />
-                    </div>
-                </div>
-            </section>
+            <FormCard tag="From — You">
+                <PartyFields
+                    label="From — You"
+                    name={senderName} onName={setSenderName}
+                    email={senderEmail} onEmail={setSenderEmail}
+                    phone={senderPhone} onPhone={setSenderPhone}
+                    address={senderAddress} onAddress={setSenderAddress}
+                    inputCls={inputCls}
+                    labelCls={labelCls}
+                />
+            </FormCard>
 
-            <section className={cardCls}>
-                <div className={sectionTagCls}>Bill To — Client</div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label className={labelCls}>Name <span style={{ color: "var(--accent2)" }}>*</span></label>
-                        <input className={inputCls} value={clientName} onChange={(e) => setClientName(e.target.value)} placeholder="Client name or company" />
-                    </div>
-                    <div>
-                        <label className={labelCls}>Email <span style={{ color: "var(--accent2)" }}>*</span></label>
-                        <input type="email" className={inputCls} value={clientEmail} onChange={(e) => setClientEmail(e.target.value)} placeholder="client@company.com" />
-                    </div>
-                    <div>
-                        <label className={labelCls}>Phone</label>
-                        <input className={inputCls} value={clientPhone} onChange={(e) => setClientPhone(e.target.value)} placeholder="+234 801 234 5678" />
-                    </div>
-                    <div>
-                        <label className={labelCls}>Address</label>
-                        <input className={inputCls} value={clientAddress} onChange={(e) => setClientAddress(e.target.value)} placeholder="123 Client St, City" />
-                    </div>
-                </div>
-            </section>
+            <FormCard tag="Bill To — Client">
+                <ClientSelector
+                    clients={clients}
+                    onSelect={handleClientSelect}
+                    selectedId={selectedClientId}
+                    inputCls={inputCls}
+                    labelCls={labelCls}
+                    saveClient={saveClient}
+                    onSaveClientChange={setSaveClient}
+                />
+                <PartyFields
+                    label="Bill To — Client"
+                    name={clientName} onName={setClientName}
+                    email={clientEmail} onEmail={setClientEmail}
+                    phone={clientPhone} onPhone={setClientPhone}
+                    address={clientAddress} onAddress={setClientAddress}
+                    inputCls={inputCls}
+                    labelCls={labelCls}
+                />
+            </FormCard>
 
-            <section className={cardCls}>
-                <div className={sectionTagCls}>Line Items</div>
-
+            <FormCard tag="Line Items">
                 <div className="hidden sm:grid grid-cols-12 gap-3 px-1 mb-2">
                     {(["Description", "Qty", "Rate", "Amount", ""] as const).map((h, i) => (
                         <span
@@ -272,10 +331,9 @@ export default function NewInvoicePage() {
                 >
                     + Add line item
                 </button>
-            </section>
+            </FormCard>
 
-            <section className={cardCls}>
-                <div className={sectionTagCls}>Adjustments & Notes</div>
+            <FormCard tag="Adjustments & Notes">
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
                     <div>
                         <label className={labelCls}>Currency</label>
@@ -315,7 +373,7 @@ export default function NewInvoicePage() {
                         placeholder="Payment terms, bank details, thank you note…"
                     />
                 </div>
-            </section>
+            </FormCard>
 
             <div
                 className="rounded-xl p-4 sm:p-5 mb-5 border"
@@ -331,14 +389,30 @@ export default function NewInvoicePage() {
                 />
             </div>
 
-            <button
-                onClick={handleSubmit}
-                disabled={loading}
-                className="w-full py-3 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ background: "var(--accent)", color: "var(--accent-fg)" }}
-            >
-                {loading ? "Creating…" : "Create Invoice →"}
-            </button>
+            <div className="flex gap-3">
+                <button
+                    onClick={handleDraft}
+                    disabled={loading !== null}
+                    className="flex-1 py-3 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2"
+                    style={{
+                        background: "transparent",
+                        border: "1px solid var(--border-strong)",
+                        color: "var(--text-muted)",
+                    }}
+                >
+                    <Save size={15} />
+                    {loading === "draft" ? "Saving…" : "Save as Draft"}
+                </button>
+                <button
+                    onClick={handleCreateAndSend}
+                    disabled={loading !== null}
+                    className="flex-1 py-3 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2"
+                    style={{ background: "var(--accent)", color: "var(--accent-fg)" }}
+                >
+                    <SendHorizontal size={15} />
+                    {loading === "send" ? "Sending…" : "Create & Send"}
+                </button>
+            </div>
         </div>
     );
 }

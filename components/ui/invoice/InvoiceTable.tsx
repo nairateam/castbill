@@ -131,66 +131,76 @@ export default function InvoiceTable({ invoices, onClearFilters }: Props) {
             }}
             className="overflow-hidden rounded-xl"
         >
-            {/* Desktop table header */}
-            <div
-                style={{ borderBottom: "1px solid var(--border)", background: "var(--bg-subtle)" }}
-                className="hidden sm:grid grid-cols-[auto_1fr_auto_auto_auto_auto] items-center gap-x-4 px-5 py-3"
-            >
-                {["Invoice", "Client", "Amount", "Status", "Date", ""].map((h) => (
-                    <span
-                        key={h}
-                        className="text-[10px] font-semibold uppercase tracking-widest"
-                        style={{ color: "var(--text-muted)" }}
-                    >
-                        {h}
-                    </span>
-                ))}
-            </div>
-
-            <div className="divide-y" style={{ borderColor: "var(--border)" }}>
-                {invoices.map((invoice) => (
-                    <div key={invoice.id}>
-                        {/* Mobile card */}
-                        <div
-                            className="sm:hidden px-4 py-3.5 transition-colors hover:bg-[var(--bg-subtle)]"
+            <table className="hidden sm:table w-full border-collapse">
+                <thead>
+                    <tr style={{ borderBottom: "1px solid var(--border)", background: "var(--bg-subtle)" }}>
+                        {["Invoice", "Client", "Amount", "Status", "Date", "Actions"].map((h) => (
+                            <th
+                                key={h}
+                                className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap px-5 py-3"
+                                style={{
+                                    color: "var(--text-muted)",
+                                    textAlign: h === "Actions" ? "right" : "left",
+                                }}
+                            >
+                                {h}
+                            </th>
+                        ))}
+                    </tr>
+                </thead>
+                <tbody>
+                    {invoices.map((invoice) => (
+                        <tr
+                            key={invoice.id}
+                            className="transition-colors hover:bg-[var(--bg-subtle)]"
+                            style={{ borderBottom: "1px solid var(--border)" }}
                         >
-                            <div className="flex items-start justify-between gap-2 mb-2">
-                                <div className="min-w-0">
-                                    <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                                        <span className="font-mono text-xs font-medium" style={{ color: "var(--accent)" }}>
-                                            #{invoice.invoiceNumber}
-                                        </span>
-                                        <StatusBadge status={invoice.status} />
-                                    </div>
-                                    <p className="truncate text-sm font-medium" style={{ color: "var(--text-primary)" }}>
-                                        {invoice.clientName}
-                                    </p>
-                                    <p className="truncate text-xs" style={{ color: "var(--text-muted)" }}>
-                                        {invoice.clientEmail}
-                                    </p>
-                                </div>
-                                <RowActions invoice={invoice} />
-                            </div>
-                            <div className="flex items-center justify-between">
-                                <span className="font-mono text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-                                    {formatAmount(invoice.total, invoice.currency)}
-                                </span>
-                                <span className="text-xs" style={{ color: "var(--text-muted)" }}>
-                                    {new Date(invoice.createdAt).toLocaleDateString("en-US", {
-                                        month: "short",
-                                        day: "numeric",
-                                        year: "numeric",
-                                    })}
-                                </span>
-                            </div>
-                        </div>
-
-                        {/* Desktop row */}
-                        <div className="hidden sm:grid grid-cols-[auto_1fr_auto_auto_auto_auto] items-center gap-x-4 px-5 py-3.5 transition-colors hover:bg-[var(--bg-subtle)]">
-                            <span className="font-mono text-sm font-medium" style={{ color: "var(--accent)" }}>
+                            <td className="px-5 py-3.5 font-mono text-sm font-medium whitespace-nowrap" style={{ color: "var(--accent)" }}>
                                 #{invoice.invoiceNumber}
-                            </span>
+                            </td>
+                            <td className="px-5 py-3.5 max-w-[200px]">
+                                <p className="truncate text-sm font-medium" style={{ color: "var(--text-primary)" }}>
+                                    {invoice.clientName}
+                                </p>
+                                <p className="truncate text-xs" style={{ color: "var(--text-muted)" }}>
+                                    {invoice.clientEmail}
+                                </p>
+                            </td>
+                            <td className="px-5 py-3.5 font-mono text-sm whitespace-nowrap" style={{ color: "var(--text-primary)" }}>
+                                {formatAmount(invoice.total, invoice.currency)}
+                            </td>
+                            <td className="px-5 py-3.5">
+                                <StatusBadge status={invoice.status} />
+                            </td>
+                            <td className="px-5 py-3.5 text-sm whitespace-nowrap" style={{ color: "var(--text-muted)" }}>
+                                {new Date(invoice.createdAt).toLocaleDateString("en-US", {
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                })}
+                            </td>
+                            <td className="px-5 py-3.5">
+                                <RowActions invoice={invoice} />
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+
+            <div className="sm:hidden divide-y" style={{ borderColor: "var(--border)" }}>
+                {invoices.map((invoice) => (
+                    <div
+                        key={invoice.id}
+                        className="px-4 py-3.5 transition-colors hover:bg-[var(--bg-subtle)]"
+                    >
+                        <div className="flex items-start justify-between gap-2 mb-2">
                             <div className="min-w-0">
+                                <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                                    <span className="font-mono text-xs font-medium" style={{ color: "var(--accent)" }}>
+                                        #{invoice.invoiceNumber}
+                                    </span>
+                                    <StatusBadge status={invoice.status} />
+                                </div>
                                 <p className="truncate text-sm font-medium" style={{ color: "var(--text-primary)" }}>
                                     {invoice.clientName}
                                 </p>
@@ -198,18 +208,19 @@ export default function InvoiceTable({ invoices, onClearFilters }: Props) {
                                     {invoice.clientEmail}
                                 </p>
                             </div>
-                            <span className="font-mono text-sm" style={{ color: "var(--text-primary)" }}>
+                            <RowActions invoice={invoice} />
+                        </div>
+                        <div className="flex items-center justify-between">
+                            <span className="font-mono text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
                                 {formatAmount(invoice.total, invoice.currency)}
                             </span>
-                            <StatusBadge status={invoice.status} />
-                            <span className="text-sm whitespace-nowrap" style={{ color: "var(--text-muted)" }}>
+                            <span className="text-xs" style={{ color: "var(--text-muted)" }}>
                                 {new Date(invoice.createdAt).toLocaleDateString("en-US", {
                                     month: "short",
                                     day: "numeric",
                                     year: "numeric",
                                 })}
                             </span>
-                            <RowActions invoice={invoice} />
                         </div>
                     </div>
                 ))}

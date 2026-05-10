@@ -12,7 +12,7 @@ import {
 const NAV_ITEMS = [
     { label: "Overview", icon: LayoutDashboard, href: "/dashboard" },
     { label: "Invoices", icon: FileText, href: "/invoice" },
-    { label: "Customers", icon: Users, href: "/dashboard/customers" },
+    { label: "Customers", icon: Users, href: "/customers" },
     { label: "Expenses", icon: Receipt, href: "/dashboard/expenses" },
 ];
 

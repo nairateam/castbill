@@ -12,9 +12,8 @@ export function getSymbol(code: string): string {
 }
 
 export function formatAmount(amount: number, currency: string): string {
-    return `${getSymbol(currency)}${Math.abs(amount).toFixed(2)}`;
+    return `${getSymbol(currency)}${fmt(Math.abs(amount))}`;
 }
-
 export function fmt(n: number): string {
     return n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
