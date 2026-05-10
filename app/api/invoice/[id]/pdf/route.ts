@@ -36,6 +36,8 @@ export async function GET(
         clientPhone: invoice.clientPhone ?? undefined,
         senderPhone: invoice.senderPhone ?? undefined,
         senderAddress: invoice.senderAddress ?? undefined,
+        senderLogoUrl: invoice.senderLogoUrl ?? undefined,
+        senderVatNumber: invoice.senderVatNumber ?? undefined,
         clientAddress: invoice.clientAddress ?? undefined,
         items: invoice.items.map((item) => ({
             description: item.description,

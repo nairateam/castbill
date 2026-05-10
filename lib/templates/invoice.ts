@@ -8,6 +8,8 @@ export type InvoiceTemplateData = {
   clientPhone?: string;
   senderPhone?: string;
   senderAddress?: string;
+  senderLogoUrl?: string;
+  senderVatNumber?: string;
   clientAddress?: string;
   clientName: string;
   clientEmail: string;

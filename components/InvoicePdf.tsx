@@ -1,5 +1,5 @@
 import { InvoiceTemplateData } from "@/lib/templates/invoice";
-import { Document, Page, Text, View, StyleSheet, Font } from "@react-pdf/renderer";
+import { Document, Page, Text, View, StyleSheet, Font, Image } from "@react-pdf/renderer";
 import { getSymbol, fmt } from "@/lib/currency";
 import fs from "fs";
 import path from "path";
@@ -15,214 +15,231 @@ Font.register({
     ],
 });
 
-const INDIGO = "#6366f1";
-const DARK = "#0d0d14";
-const MUTED = "#8b8fa8";
-const BORDER = "#ebebf2";
-const LIGHT = "#f7f7fb";
+const BLACK = "#0a0a0a";
+const DARK = "#1a1a1a";
+const MUTED = "#6b7280";
+const LIGHT_MUTED = "#9ca3af";
+const BORDER = "#e5e7eb";
+const LIGHT = "#f9fafb";
 const WHITE = "#ffffff";
-const INDIGO_LIGHT = "#eef0fe";
+const ACCENT = "#6366f1";
 
 const s = StyleSheet.create({
     page: {
         fontFamily: "Roboto",
         fontSize: 10,
-        color: DARK,
+        color: BLACK,
         backgroundColor: WHITE,
-        paddingBottom: 60,
+        paddingBottom: 80,
     },
 
-    // Top band
-    topBand: {
-        backgroundColor: DARK,
-        paddingHorizontal: 52,
-        paddingVertical: 32,
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "flex-end",
-    },
-
-    brandName: {
-        fontSize: 22,
-        fontWeight: 700,
-        color: WHITE,
-        letterSpacing: 0.5,
-    },
-
-    brandDot: {
-        color: INDIGO,
-    },
-
-    brandTagline: {
-        fontSize: 7,
-        color: "rgba(255,255,255,0.3)",
-        marginTop: 3,
-        letterSpacing: 1.5,
-        textTransform: "uppercase",
-    },
-
-    invoiceTitleBlock: {
-        alignItems: "flex-end",
-    },
-
-    invoiceWord: {
-        fontSize: 11,
-        fontWeight: 700,
-        color: "rgba(255,255,255,0.35)",
-        textTransform: "uppercase",
-        letterSpacing: 3,
-        marginBottom: 4,
-    },
-
-    invoiceNumber: {
-        fontSize: 26,
-        fontWeight: 700,
-        color: WHITE,
-        letterSpacing: 0.5,
-    },
-
-    invoiceNumberHash: {
-        color: INDIGO,
-    },
-
-    statusPill: {
-        marginTop: 8,
-        backgroundColor: INDIGO,
-        borderRadius: 20,
-        paddingVertical: 3,
-        paddingHorizontal: 10,
-        alignSelf: "flex-end",
-    },
-
-    statusText: {
-        fontSize: 7,
-        fontWeight: 700,
-        color: WHITE,
-        textTransform: "uppercase",
-        letterSpacing: 1.5,
-    },
-
-    // Meta strip
-    metaStrip: {
-        backgroundColor: INDIGO_LIGHT,
-        paddingHorizontal: 52,
-        paddingVertical: 12,
-        flexDirection: "row",
-        gap: 40,
-    },
-
-    metaItem: {},
-
-    metaLabel: {
-        fontSize: 6,
-        fontWeight: 700,
-        color: INDIGO,
-        textTransform: "uppercase",
-        letterSpacing: 1.5,
-        marginBottom: 2,
-    },
-
-    metaValue: {
-        fontSize: 9,
-        fontWeight: 700,
-        color: DARK,
-    },
-
-    // Body
     body: {
         paddingHorizontal: 52,
-        paddingTop: 32,
+        paddingTop: 48,
     },
 
-    // Parties
-    partiesRow: {
+    header: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "flex-start",
+        marginBottom: 10,
+    },
+
+    invoiceTitle: {
+        fontSize: 42,
+        fontWeight: 700,
+        color: BLACK,
+        letterSpacing: -1,
+        lineHeight: 1,
+    },
+
+    invoiceMeta: {
+        flexDirection: "row",
+        gap: 20,
+        marginTop: 8,
+    },
+
+    invoiceMetaLabel: {
+        fontSize: 8,
+        color: LIGHT_MUTED,
+        textTransform: "uppercase",
+        letterSpacing: 1,
+        marginRight: 4,
+    },
+
+    invoiceMetaValue: {
+        fontSize: 8,
+        color: DARK,
+        fontWeight: 700,
+    },
+
+    logoBlock: {
+        alignItems: "flex-end",
+    },
+
+    logoImage: {
+        width: 80,
+        height: 40,
+        objectFit: "contain",
+    },
+
+    logoFallback: {
+        fontSize: 18,
+        fontWeight: 700,
+        color: BLACK,
+        letterSpacing: 0.3,
+    },
+
+    logoFallbackDot: {
+        color: ACCENT,
+    },
+
+    logoTagline: {
+        fontSize: 7,
+        color: LIGHT_MUTED,
+        textTransform: "uppercase",
+        letterSpacing: 1,
+        marginTop: 2,
+        textAlign: "right",
+    },
+
+    divider: {
+        borderBottom: `1px solid ${BORDER}`,
+        marginVertical: 20,
+    },
+
+    billToSection: {
         flexDirection: "row",
         justifyContent: "space-between",
         marginBottom: 32,
-        paddingBottom: 28,
-        borderBottom: `1px solid ${BORDER}`,
     },
 
-    partyLabel: {
-        fontSize: 6,
+    billToLeft: {
+        flex: 1,
+    },
+
+    billToLabel: {
+        fontSize: 8,
         fontWeight: 700,
-        color: MUTED,
-        textTransform: "uppercase",
-        letterSpacing: 1.5,
-        marginBottom: 7,
-    },
-
-    partyName: {
-        fontSize: 13,
-        fontWeight: 700,
-        color: DARK,
-        marginBottom: 5,
-    },
-
-    partyDetail: {
-        fontSize: 8.5,
-        color: MUTED,
-        lineHeight: 1.7,
-    },
-
-    balanceBlock: {
-        alignItems: "flex-end",
-        justifyContent: "flex-end",
-    },
-
-    balanceLabel: {
-        fontSize: 6,
-        fontWeight: 700,
-        color: MUTED,
+        color: ACCENT,
         textTransform: "uppercase",
         letterSpacing: 1.5,
         marginBottom: 6,
+        borderBottom: `1px solid ${ACCENT}`,
+        paddingBottom: 3,
+    },
+
+    billToName: {
+        fontSize: 13,
+        fontWeight: 700,
+        color: BLACK,
+        marginBottom: 2,
+    },
+
+    billToRole: {
+        fontSize: 9,
+        color: MUTED,
+        marginBottom: 4,
+    },
+
+    billToDetail: {
+        fontSize: 9,
+        color: MUTED,
+        lineHeight: 1.6,
+    },
+
+    billToRight: {
+        alignItems: "flex-end",
+        justifyContent: "flex-start",
+    },
+
+    balanceLabel: {
+        fontSize: 8,
+        fontWeight: 700,
+        color: MUTED,
+        textTransform: "uppercase",
+        letterSpacing: 1,
+        marginBottom: 4,
+        textAlign: "right",
     },
 
     balanceAmount: {
-        fontSize: 28,
+        fontSize: 26,
         fontWeight: 700,
-        color: DARK,
+        color: BLACK,
+        textAlign: "right",
         letterSpacing: -0.5,
     },
 
-    balanceSym: {
-        fontSize: 16,
-        fontWeight: 400,
-        color: MUTED,
+    dueDateRow: {
+        marginTop: 8,
+        alignItems: "flex-end",
     },
 
-    // Table
+    dueDateLabel: {
+        fontSize: 7,
+        fontWeight: 700,
+        color: LIGHT_MUTED,
+        textTransform: "uppercase",
+        letterSpacing: 1,
+        textAlign: "right",
+    },
+
+    dueDateValue: {
+        fontSize: 10,
+        fontWeight: 700,
+        color: BLACK,
+        textAlign: "right",
+        marginTop: 2,
+    },
+
     tableWrap: {
-        marginBottom: 0,
+        marginBottom: 4,
     },
 
     tableHead: {
         flexDirection: "row",
-        paddingVertical: 9,
-        paddingHorizontal: 14,
-        backgroundColor: DARK,
-        borderRadius: 4,
-        marginBottom: 2,
+        borderBottom: `2px solid ${BLACK}`,
+        paddingBottom: 8,
+        marginBottom: 0,
     },
 
     thText: {
-        fontSize: 6.5,
+        fontSize: 8,
         fontWeight: 700,
-        color: "rgba(255,255,255,0.45)",
+        color: BLACK,
         textTransform: "uppercase",
-        letterSpacing: 1.3,
+        letterSpacing: 1.2,
     },
 
     tableRow: {
         flexDirection: "row",
-        paddingVertical: 11,
-        paddingHorizontal: 14,
+        paddingVertical: 12,
         borderBottom: `1px solid ${BORDER}`,
     },
 
-    tableRowAlt: {
-        backgroundColor: LIGHT,
+    tdDescTitle: {
+        fontSize: 10,
+        fontWeight: 700,
+        color: BLACK,
+        marginBottom: 2,
+    },
+
+    tdDescSub: {
+        fontSize: 8,
+        color: MUTED,
+        lineHeight: 1.5,
+    },
+
+    tdMuted: {
+        fontSize: 10,
+        color: MUTED,
+    },
+
+    tdAmount: {
+        fontSize: 10,
+        fontWeight: 700,
+        color: BLACK,
     },
 
     col1: { flex: 3 },
@@ -230,39 +247,40 @@ const s = StyleSheet.create({
     col3: { flex: 1, textAlign: "right" },
     col4: { flex: 1, textAlign: "right" },
 
-    tdDesc: {
-        fontSize: 10,
-        color: DARK,
-        fontWeight: 700,
-    },
-
-    tdMuted: {
-        fontSize: 9.5,
-        color: MUTED,
-    },
-
-    tdAmount: {
-        fontSize: 9.5,
-        fontWeight: 700,
-        color: DARK,
-    },
-
-    // Totals
-    totalsWrap: {
+    bottomSection: {
         flexDirection: "row",
-        justifyContent: "flex-end",
-        marginTop: 6,
+        justifyContent: "space-between",
+        marginTop: 20,
+        gap: 32,
     },
 
-    totalsInner: {
-        width: 240,
+    termsBlock: {
+        flex: 1,
+    },
+
+    termsLabel: {
+        fontSize: 9,
+        fontWeight: 700,
+        color: BLACK,
+        marginBottom: 6,
+        textTransform: "uppercase",
+        letterSpacing: 0.5,
+    },
+
+    termsText: {
+        fontSize: 8,
+        color: MUTED,
+        lineHeight: 1.7,
+    },
+
+    totalsBlock: {
+        width: 220,
     },
 
     totalRow: {
         flexDirection: "row",
         justifyContent: "space-between",
-        paddingVertical: 7,
-        borderBottom: `1px solid ${BORDER}`,
+        paddingVertical: 5,
     },
 
     totalLabel: {
@@ -272,170 +290,174 @@ const s = StyleSheet.create({
 
     totalValue: {
         fontSize: 9,
-        color: DARK,
+        color: BLACK,
     },
 
-    grandWrap: {
+    grandRow: {
         flexDirection: "row",
         justifyContent: "space-between",
-        alignItems: "center",
-        marginTop: 10,
-        paddingVertical: 11,
-        paddingHorizontal: 16,
-        backgroundColor: INDIGO,
-        borderRadius: 4,
+        paddingTop: 10,
+        marginTop: 6,
+        borderTop: `2px solid ${BLACK}`,
     },
 
     grandLabel: {
-        fontSize: 9,
+        fontSize: 11,
         fontWeight: 700,
-        color: "rgba(255,255,255,0.7)",
-        textTransform: "uppercase",
-        letterSpacing: 1,
+        color: BLACK,
     },
 
     grandValue: {
-        fontSize: 15,
+        fontSize: 13,
         fontWeight: 700,
-        color: WHITE,
+        color: BLACK,
     },
 
-    // Notes
-    notesWrap: {
-        marginHorizontal: 52,
-        marginTop: 24,
-        padding: "12 14",
-        borderLeft: `3px solid ${INDIGO}`,
-        backgroundColor: INDIGO_LIGHT,
-        borderRadius: 2,
-    },
-
-    notesLabel: {
-        fontSize: 6,
-        fontWeight: 700,
-        color: INDIGO,
-        textTransform: "uppercase",
-        letterSpacing: 1.5,
-        marginBottom: 5,
-    },
-
-    notesText: {
-        fontSize: 8.5,
-        color: MUTED,
-        lineHeight: 1.7,
-    },
-
-    // Bottom footer
     footer: {
         position: "absolute",
         bottom: 0,
         left: 0,
         right: 0,
+        backgroundColor: DARK,
         paddingVertical: 14,
         paddingHorizontal: 52,
-        borderTop: `1px solid ${BORDER}`,
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
-        backgroundColor: WHITE,
     },
 
-    footerLeft: {
-        fontSize: 7.5,
-        color: MUTED,
+    footerLeft: {},
+
+    footerContactLabel: {
+        fontSize: 7,
+        fontWeight: 700,
+        color: WHITE,
+        textTransform: "uppercase",
+        letterSpacing: 1.5,
+        marginBottom: 4,
+    },
+
+    footerDetail: {
+        fontSize: 8,
+        color: "rgba(255,255,255,0.5)",
+        lineHeight: 1.6,
     },
 
     footerRight: {
-        fontSize: 7.5,
+        alignItems: "flex-end",
+    },
+
+    footerSenderName: {
+        fontSize: 11,
         fontWeight: 700,
-        color: INDIGO,
+        color: WHITE,
+        letterSpacing: 0.3,
+    },
+
+    footerSenderRole: {
+        fontSize: 7,
+        color: "rgba(255,255,255,0.4)",
+        textTransform: "uppercase",
+        letterSpacing: 1,
+        marginTop: 2,
+    },
+
+    statusPill: {
+        marginTop: 6,
+        paddingVertical: 2,
+        paddingHorizontal: 8,
+        backgroundColor: ACCENT,
+        borderRadius: 20,
+        alignSelf: "flex-start",
+    },
+
+    statusText: {
+        fontSize: 7,
+        fontWeight: 700,
+        color: WHITE,
+        textTransform: "uppercase",
+        letterSpacing: 1,
     },
 });
 
 export function InvoicePDF({ data }: { data: InvoiceTemplateData }) {
     const sym = getSymbol(data.currency ?? "NGN");
+    const isCompany = !!data.senderLogoUrl || !!data.senderVatNumber;
 
     return (
         <Document>
             <Page size="A4" style={s.page}>
-
-                {/* Top dark band */}
-                <View style={s.topBand}>
-                    <View>
-                        <Text style={s.brandName}>
-                            CastBill<Text style={s.brandDot}>.</Text>
-                        </Text>
-                        <Text style={s.brandTagline}>Invoice Management</Text>
-                    </View>
-                    <View style={s.invoiceTitleBlock}>
-                        <Text style={s.invoiceWord}>Invoice</Text>
-                        <Text style={s.invoiceNumber}>
-                            <Text style={s.invoiceNumberHash}>#</Text>{data.invoiceNumber}
-                        </Text>
-                        <View style={s.statusPill}>
-                            <Text style={s.statusText}>{data.status}</Text>
-                        </View>
-                    </View>
-                </View>
-
-                {/* Meta strip */}
-                <View style={s.metaStrip}>
-                    <View style={s.metaItem}>
-                        <Text style={s.metaLabel}>Issued</Text>
-                        <Text style={s.metaValue}>{data.createdAt}</Text>
-                    </View>
-                    {data.dueDate && (
-                        <View style={s.metaItem}>
-                            <Text style={s.metaLabel}>Due Date</Text>
-                            <Text style={s.metaValue}>{data.dueDate}</Text>
-                        </View>
-                    )}
-                    <View style={s.metaItem}>
-                        <Text style={s.metaLabel}>Currency</Text>
-                        <Text style={s.metaValue}>{data.currency}</Text>
-                    </View>
-                </View>
-
                 <View style={s.body}>
 
-                    {/* Parties */}
-                    <View style={s.partiesRow}>
+                    {/* Header */}
+                    <View style={s.header}>
                         <View>
-                            <Text style={s.partyLabel}>From</Text>
-                            <Text style={s.partyName}>{data.senderName}</Text>
-                            <Text style={s.partyDetail}>{data.senderEmail}</Text>
-                            {data.senderPhone && <Text style={s.partyDetail}>{data.senderPhone}</Text>}
-                            {data.senderAddress && <Text style={s.partyDetail}>{data.senderAddress}</Text>}
+                            <Text style={s.invoiceTitle}>INVOICE</Text>
+                            <View style={s.invoiceMeta}>
+                                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                                    <Text style={s.invoiceMetaLabel}>No. </Text>
+                                    <Text style={s.invoiceMetaValue}>#{data.invoiceNumber}</Text>
+                                </View>
+                                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                                    <Text style={s.invoiceMetaLabel}>Invoice Date: </Text>
+                                    <Text style={s.invoiceMetaValue}>{data.createdAt}</Text>
+                                </View>
+                                <View style={s.statusPill}>
+                                    <Text style={s.statusText}>{data.status}</Text>
+                                </View>
+                            </View>
                         </View>
 
-                        <View>
-                            <Text style={[s.partyLabel, { textAlign: "right" }]}>Bill To</Text>
-                            <Text style={[s.partyName, { textAlign: "right" }]}>{data.clientName}</Text>
-                            <Text style={[s.partyDetail, { textAlign: "right" }]}>{data.clientEmail}</Text>
-                            {data.clientPhone && <Text style={[s.partyDetail, { textAlign: "right" }]}>{data.clientPhone}</Text>}
-                            {data.clientAddress && <Text style={[s.partyDetail, { textAlign: "right" }]}>{data.clientAddress}</Text>}
+                        <View style={s.logoBlock}>
+                            {data.senderLogoUrl ? (
+                                <Image src={data.senderLogoUrl} style={s.logoImage} />
+                            ) : (
+                                <Text style={s.logoFallback}>
+                                    CastBill<Text style={s.logoFallbackDot}>.</Text>
+                                </Text>
+                            )}
+                            <Text style={s.logoTagline}>{data.senderName}</Text>
+                        </View>
+                    </View>
+
+                    <View style={s.divider} />
+
+                    {/* Bill To + Balance */}
+                    <View style={s.billToSection}>
+                        <View style={s.billToLeft}>
+                            <Text style={s.billToLabel}>Invoice To:</Text>
+                            <Text style={s.billToName}>{data.clientName}</Text>
+                            {data.clientPhone && <Text style={s.billToDetail}>P. {data.clientPhone}</Text>}
+                            <Text style={s.billToDetail}>E. {data.clientEmail}</Text>
+                            {data.clientAddress && <Text style={s.billToDetail}>A. {data.clientAddress}</Text>}
                         </View>
 
-                        <View style={s.balanceBlock}>
-                            <Text style={s.balanceLabel}>Total Due</Text>
-                            <Text style={s.balanceAmount}>
-                                <Text style={s.balanceSym}>{sym}</Text>{fmt(data.total)}
-                            </Text>
+                        <View style={s.billToRight}>
+                            <Text style={s.balanceLabel}>Balance Due</Text>
+                            <Text style={s.balanceAmount}>{sym} {fmt(data.total)}</Text>
+                            {data.dueDate && (
+                                <View style={s.dueDateRow}>
+                                    <Text style={s.dueDateLabel}>Due Date</Text>
+                                    <Text style={s.dueDateValue}>{data.dueDate}</Text>
+                                </View>
+                            )}
                         </View>
                     </View>
 
                     {/* Table */}
                     <View style={s.tableWrap}>
                         <View style={s.tableHead}>
-                            <Text style={[s.thText, s.col1]}>Description</Text>
+                            <Text style={[s.thText, s.col1]}>Item Description</Text>
                             <Text style={[s.thText, s.col2]}>Qty</Text>
-                            <Text style={[s.thText, s.col3]}>Rate</Text>
-                            <Text style={[s.thText, s.col4]}>Amount</Text>
+                            <Text style={[s.thText, s.col3]}>Price</Text>
+                            <Text style={[s.thText, s.col4]}>Total</Text>
                         </View>
 
                         {data.items.map((item, i) => (
-                            <View key={i} style={[s.tableRow, i % 2 !== 0 ? s.tableRowAlt : {}]}>
-                                <Text style={[s.tdDesc, s.col1]}>{item.description}</Text>
+                            <View key={i} style={s.tableRow}>
+                                <View style={s.col1}>
+                                    <Text style={s.tdDescTitle}>{item.description}</Text>
+                                </View>
                                 <Text style={[s.tdMuted, s.col2]}>{item.quantity}</Text>
                                 <Text style={[s.tdMuted, s.col3]}>{sym}{fmt(item.rate)}</Text>
                                 <Text style={[s.tdAmount, s.col4]}>{sym}{fmt(item.amount)}</Text>
@@ -443,21 +465,41 @@ export function InvoicePDF({ data }: { data: InvoiceTemplateData }) {
                         ))}
                     </View>
 
-                    {/* Totals */}
-                    <View style={s.totalsWrap}>
-                        <View style={s.totalsInner}>
+                    {/* Bottom section */}
+                    <View style={s.bottomSection}>
+                        <View style={s.termsBlock}>
+                            {data.notes ? (
+                                <>
+                                    <Text style={s.termsLabel}>Terms & Conditions:</Text>
+                                    <Text style={s.termsText}>{data.notes}</Text>
+                                </>
+                            ) : (
+                                <>
+                                    <Text style={s.termsLabel}>From:</Text>
+                                    <Text style={s.termsText}>{data.senderName}</Text>
+                                    <Text style={s.termsText}>{data.senderEmail}</Text>
+                                    {data.senderPhone && <Text style={s.termsText}>{data.senderPhone}</Text>}
+                                    {data.senderAddress && <Text style={s.termsText}>{data.senderAddress}</Text>}
+                                    {isCompany && data.senderVatNumber && (
+                                        <Text style={s.termsText}>VAT: {data.senderVatNumber}</Text>
+                                    )}
+                                </>
+                            )}
+                        </View>
+
+                        <View style={s.totalsBlock}>
                             {[
-                                { label: "Subtotal", value: `${sym}${fmt(data.subtotal)}` },
-                                { label: "Tax", value: `${sym}${fmt(data.tax)}` },
-                                { label: "Discount", value: `-${sym}${fmt(data.discount)}` },
+                                { label: "Sub-Total:", value: `${sym}${fmt(data.subtotal)}` },
+                                { label: `Tax Vat:`, value: `${sym}${fmt(data.tax)}` },
+                                { label: "Discount:", value: `${sym}${fmt(data.discount)}` },
                             ].map(({ label, value }) => (
                                 <View key={label} style={s.totalRow}>
                                     <Text style={s.totalLabel}>{label}</Text>
                                     <Text style={s.totalValue}>{value}</Text>
                                 </View>
                             ))}
-                            <View style={s.grandWrap}>
-                                <Text style={s.grandLabel}>Total Due</Text>
+                            <View style={s.grandRow}>
+                                <Text style={s.grandLabel}>Grand Total:</Text>
                                 <Text style={s.grandValue}>{sym}{fmt(data.total)}</Text>
                             </View>
                         </View>
@@ -465,20 +507,20 @@ export function InvoicePDF({ data }: { data: InvoiceTemplateData }) {
 
                 </View>
 
-                {/* Notes */}
-                {data.notes && (
-                    <View style={s.notesWrap}>
-                        <Text style={s.notesLabel}>Notes</Text>
-                        <Text style={s.notesText}>{data.notes}</Text>
-                    </View>
-                )}
-
                 {/* Footer */}
                 <View style={s.footer} fixed>
-                    <Text style={s.footerLeft}>
-                        {data.senderEmail} · castbill.vercel.app
-                    </Text>
-                    <Text style={s.footerRight}>CastBill.</Text>
+                    <View style={s.footerLeft}>
+                        <Text style={s.footerContactLabel}>Contact:</Text>
+                        {data.senderAddress && <Text style={s.footerDetail}>Address: {data.senderAddress}</Text>}
+                        {data.senderPhone && <Text style={s.footerDetail}>{data.senderPhone}</Text>}
+                        <Text style={s.footerDetail}>{data.senderEmail}</Text>
+                    </View>
+                    <View style={s.footerRight}>
+                        <Text style={s.footerSenderName}>{data.senderName}</Text>
+                        <Text style={s.footerSenderRole}>
+                            {isCompany ? "Company" : "Individual"}
+                        </Text>
+                    </View>
                 </View>
 
             </Page>
