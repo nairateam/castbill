@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ invoice }, { status: 201 });
     } catch (error) {
         console.error("[POST /api/invoice]", error);
-        return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
+        return NextResponse.json({ error: "Something went wrongss" }, { status: 500 });
     }
 }
 

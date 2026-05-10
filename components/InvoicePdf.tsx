@@ -125,7 +125,7 @@ const s = StyleSheet.create({
         textTransform: "uppercase",
         letterSpacing: 1.5,
         marginBottom: 6,
-        borderBottom: `1px solid ${ACCENT}`,
+        // borderBottom: `1px solid ${ACCENT}`,
         paddingBottom: 3,
     },
 
@@ -402,9 +402,9 @@ export function InvoicePDF({ data }: { data: InvoiceTemplateData }) {
                                     <Text style={s.invoiceMetaLabel}>Invoice Date: </Text>
                                     <Text style={s.invoiceMetaValue}>{data.createdAt}</Text>
                                 </View>
-                                <View style={s.statusPill}>
+                                {/* <View style={s.statusPill}>
                                     <Text style={s.statusText}>{data.status}</Text>
-                                </View>
+                                </View> */}
                             </View>
                         </View>
 
